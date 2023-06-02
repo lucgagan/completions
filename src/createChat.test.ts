@@ -42,7 +42,7 @@ test("streams progress", async () => {
     console.log(message);
   });
 
-  await chat.sendMessage("continue sequence: foo bar baz", onMessage);
+  await chat.sendMessage("continue sequence: a b c", onMessage);
 
   assert.ok(onMessage.mock.calls.length > 0);
 });

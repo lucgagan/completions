@@ -1,4 +1,3 @@
-import { got, type Request } from "got";
 import { z } from "zod";
 
 const RoleZodSchema = z.enum(["system", "user", "assistant"]);
@@ -72,7 +71,7 @@ const CompletionsOptionsZodSchema = z
       .function()
       .args(
         z.object({
-          stream: z.custom<Request>(),
+          reader: z.custom<ReadableStreamDefaultReader<string>>(),
           message: ResponseChunkZodSchema,
         })
       )
@@ -111,89 +110,84 @@ const CompletionResponseZodSchema = z.object({
 
 type CompletionResponse = z.infer<typeof CompletionResponseZodSchema>;
 
-export const createCompletions = (
+export const createCompletions = async (
   options: CompletionsOptions
 ): Promise<CompletionResponse> => {
-  return new Promise((resolve, reject) => {
-    const stream = got.stream("https://api.openai.com/v1/chat/completions", {
-      headers: {
-        Authorization: `Bearer ${options.apiKey}`,
-      },
-      json: {
-        messages: options.messages,
-        model: options.model,
-        stream: true,
-        temperature: options.temperature,
-        top_p: options.topP,
-        n: options.n,
-        stop: options.stop,
-        frequency_penalty: options.frequencyPenalty,
-        presence_penalty: options.presencePenalty,
-        logit_bias: options.logitBias,
-        max_tokens: options.maxTokens,
-        user: options.user,
-      },
-      method: "POST",
-    });
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    headers: {
+      Authorization: `Bearer ${options.apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      messages: options.messages,
+      model: options.model,
+      stream: true,
+      temperature: options.temperature,
+      top_p: options.topP,
+      n: options.n,
+      stop: options.stop,
+      frequency_penalty: options.frequencyPenalty,
+      presence_penalty: options.presencePenalty,
+      logit_bias: options.logitBias,
+      max_tokens: options.maxTokens,
+      user: options.user,
+    }),
+    method: "POST",
+  });
 
-    const choices: Choice[] = [];
+  const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
 
-    stream.on("data", (chunk: Buffer) => {
-      const body = chunk.toString();
+  const choices: Choice[] = [];
 
-      for (const message of body.split("\n")) {
-        if (message === "") {
-          continue;
+  while (true) {
+    const {value, done,} = await reader.read();
+
+    if (done) {
+      break;
+    }
+
+    for (const chunk of value.split("\n")) {
+      if (chunk === "") {
+        continue;
+      }
+  
+      if (chunk === "data: [DONE]") {
+        break;
+      }
+
+      if (!chunk.startsWith("data: ")) {
+        throw new Error(`Unexpected message: ${chunk}`);
+      }
+  
+      const responseChunk = ResponseChunkZodSchema.parse(
+        JSON.parse(chunk.toString().slice("data: ".length))
+      );
+
+      options.onMessage?.({
+        reader,
+        message: responseChunk,
+      });
+
+      for (const choice of responseChunk.choices) {
+        choices[choice.index] = choices[choice.index] ?? {};
+
+        if (choice.finish_reason) {
+          choices[choice.index].finishReason = choice.finish_reason;
         }
 
-        if (message === "data: [DONE]") {
-          break;
+        if ("role" in choice.delta) {
+          choices[choice.index].role = choice.delta.role as Role;
         }
 
-        if (!message.startsWith("data: ")) {
-          stream.destroy();
-
-          reject(new Error(`Unexpected message: ${message}`));
-
-          break;
-        }
-
-        const json = ResponseChunkZodSchema.parse(
-          JSON.parse(message.toString().slice("data: ".length))
-        );
-
-        options.onMessage?.({
-          stream,
-          message: json,
-        });
-
-        for (const choice of json.choices) {
-          choices[choice.index] = choices[choice.index] ?? {};
-
-          if (choice.finish_reason) {
-            choices[choice.index].finishReason = choice.finish_reason;
-          }
-
-          if ("role" in choice.delta) {
-            choices[choice.index].role = choice.delta.role as Role;
-          }
-
-          if ("content" in choice.delta) {
-            choices[choice.index].content = choices[choice.index].content ?? "";
-            choices[choice.index].content += choice.delta.content;
-          }
+        if ("content" in choice.delta) {
+          choices[choice.index].content = choices[choice.index].content ?? "";
+          choices[choice.index].content += choice.delta.content;
         }
       }
-    });
+    }
+  }
 
-    stream.on("error", (error) => {
-      return reject(error);
-    });
-
-    stream.on("end", () => {
-      resolve({
-        choices: ChoiceZodSchema.array().parse(choices),
-      });
-    });
-  });
+  return {
+    choices: ChoiceZodSchema.array().parse(choices),
+  };
 };
