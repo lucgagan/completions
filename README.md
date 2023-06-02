@@ -2,6 +2,12 @@
 
 Node.js SDK for interacting with [OpenAI Chat](https://chat.openai.com/) [Completions API](https://platform.openai.com/docs/api-reference/chat/create).
 
+This SDK makes it simple to:
+
+* [send and receive chat messages](#usage)
+* [save and restore chat conversations](#resuming-conversations)
+* [stream chat responses](#streaming-conversations)
+
 ## Usage
 
 `createChat` interacts with the [`/v1/chat/completions`](https://platform.openai.com/docs/api-reference/chat/create) API endpoint.
