@@ -20,6 +20,9 @@
     "completions",
     "stream"
   ],
+  "release": {
+    "branches": ["main"]
+  },
   "types": "./dist/index.d.ts",
   "name": "completions",
   "main": "./dist/index.js",
