@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CancelledCompletionError } from "./errors";
+import { CancelledCompletionError, UnrecoverableRemoteError } from "./errors";
 
 const RoleZodSchema = z.enum(["system", "user", "assistant"]);
 
@@ -151,6 +151,21 @@ export const createCompletions = async (
 
     if (done) {
       break;
+    }
+
+    // {
+    //   "error": {
+    //     "message": "This model's maximum context length is 4097 tokens. However, your messages resulted in 5034 tokens. Please reduce the length of the messages.",
+    //     "type": "invalid_request_error",
+    //     "param": "messages",
+    //     "code": "context_length_exceeded"
+    //   }
+    // }
+    if (value.startsWith('{')) {
+      await reader.cancel();
+
+      // As far as I can tell, if the response is an object, then it is an unrecoverable error.
+      throw new UnrecoverableRemoteError(value);
     }
 
     for (const chunk of value

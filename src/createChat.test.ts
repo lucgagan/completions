@@ -69,7 +69,7 @@ test("restore conversation", async () => {
 
   const chatLog: Message[] = [
     {
-      content: "think of a random number between 1000 and 9999",
+      content: "what number comes after 2133",
       role: "user",
     },
     { role: "assistant", content: "2134" },
@@ -79,7 +79,7 @@ test("restore conversation", async () => {
     chat.addMessage(message);
   }
 
-  const response = await chat.sendMessage("tell me the number you thought of");
+  const response = await chat.sendMessage("repeat the last answer");
 
   assert.match(response.content, /2134/);
 });
