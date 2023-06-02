@@ -135,6 +135,10 @@ export const createCompletions = async (
     method: "POST",
   });
 
+  if (!response.body) {
+    throw new Error("Expected response to have a body");
+  }
+
   const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
 
   const choices: Choice[] = [];
