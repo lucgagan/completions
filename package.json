@@ -21,7 +21,9 @@
     "stream"
   ],
   "release": {
-    "branches": ["main"]
+    "branches": [
+      "main"
+    ]
   },
   "types": "./dist/index.d.ts",
   "name": "completions",
