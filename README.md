@@ -105,7 +105,7 @@ await chat.sentMessage("continue the sequence: a b c", (message) => {
 
 ## My other projects
 
-- [Developer Utilities Toolkit](https://ray.run/tools)
+- [Developer Utilities](https://ray.run/tools)
 
 ## Running tests
 
