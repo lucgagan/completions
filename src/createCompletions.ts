@@ -68,12 +68,16 @@ const ResponseChunkZodSchema = z
  */
 const CompletionsOptionsZodSchema = z
   .object({
-    onMessage: z.function().args(
-      z.object({
-        stream: z.custom<Request>(),
-        message: ResponseChunkZodSchema,
-      }),
-    ).returns(z.void()).optional(),
+    onMessage: z
+      .function()
+      .args(
+        z.object({
+          stream: z.custom<Request>(),
+          message: ResponseChunkZodSchema,
+        })
+      )
+      .returns(z.void())
+      .optional(),
     apiKey: z.string(),
     model: z.string(),
     messages: z.array(MessageZodSchema),

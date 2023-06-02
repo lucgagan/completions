@@ -5,10 +5,15 @@ import {
 } from "./createCompletions";
 import pRetry from "p-retry";
 
-export const createChat = (options: Omit<Omit<Omit<CompletionsOptions, "messages">, "n">, "onMessage">) => {
+export const createChat = (
+  options: Omit<Omit<Omit<CompletionsOptions, "messages">, "n">, "onMessage">
+) => {
   const messages: Message[] = [];
 
-  const sendMessage = async (prompt: string, onMessage?: CompletionsOptions['onMessage']) => {
+  const sendMessage = async (
+    prompt: string,
+    onMessage?: CompletionsOptions["onMessage"]
+  ) => {
     const message: Message = {
       content: prompt,
       role: "user",

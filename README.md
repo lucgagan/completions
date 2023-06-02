@@ -6,8 +6,8 @@ Node.js SDK for interacting with [OpenAI Chat](https://chat.openai.com/) [Comple
 
 `createChat` interacts with the [`/v1/chat/completions`](https://platform.openai.com/docs/api-reference/chat/create) API endpoint.
 
-* It streams the response
-* It tracks the conversations
+- It streams the response
+- It tracks the conversations
 
 ```ts
 import { createChat } from "completions";
@@ -81,7 +81,6 @@ for (const message of messages) {
 }
 
 await chat.sentMessage("what random number did you pick?");
-
 ```
 
 ### Streaming conversations
@@ -92,7 +91,7 @@ const chat = createChat({
   model: "gpt-3.5-turbo",
 });
 
-await chat.sentMessage('continue the sequence: a b c', (message) => {
+await chat.sentMessage("continue the sequence: a b c", (message) => {
   console.log(message);
 });
 ```
