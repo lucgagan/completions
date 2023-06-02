@@ -1,7 +1,6 @@
 import {
   type CompletionsOptions,
   type Message,
-  type CompletionResponse,
   createCompletions,
 } from "./createCompletions";
 import { retry } from "./retry";

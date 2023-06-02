@@ -8,7 +8,8 @@
     "noEmit": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": false
+    "noUnusedParameters": false,
+    "useUnknownInCatchVariables": false
   },
   "include": ["src"]
 }
