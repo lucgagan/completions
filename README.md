@@ -8,6 +8,7 @@ This SDK makes it simple to:
 - [send and receive chat messages](#usage)
 - [save and restore chat conversations](#resuming-conversations)
 - [stream chat responses](#streaming-conversations)
+- [cancel chat responses](#cancelling-responses)
 
 ## Usage
 
@@ -101,6 +102,31 @@ const chat = createChat({
 await chat.sentMessage("continue the sequence: a b c", (message) => {
   console.log(message);
 });
+```
+
+### Cancelling responses
+
+When cancelling responses, you will want to handle the special `CancelledCompletionError` error.
+
+```ts
+import { createChat, CancelledCompletionError } from "completions";
+
+const chat = createChat({
+  apiKey: OPENAI_API_KEY,
+  model: "gpt-3.5-turbo",
+});
+
+try {
+  await chat.sendMessage("continue sequence: a b c", ({ cancel }) => {
+    cancel();
+  });
+} catch (error) {
+  if (error instanceof CancelledCompletion) {
+    console.log("cancelled");
+  }
+
+  throw error;
+}
 ```
 
 ## My other projects

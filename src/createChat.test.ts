@@ -26,11 +26,11 @@ test("remembers conversation", async () => {
     model: "gpt-3.5-turbo",
   });
 
-  await chat.sendMessage("remember number 14159265359");
+  await chat.sendMessage("My name is Luc");
 
-  const response = await chat.sendMessage("what number did I say?");
+  const response = await chat.sendMessage("What is my name?");
 
-  assert.match(response.content, /14159265359/);
+  assert.match(response.content, /Luc/);
 });
 
 test("streams progress", async () => {
@@ -82,4 +82,17 @@ test("restore conversation", async () => {
   const response = await chat.sendMessage("tell me the number you thought of");
 
   assert.match(response.content, /2134/);
+});
+
+test("cancel response", async () => {
+  const chat = createChat({
+    apiKey: OPENAI_API_KEY,
+    model: "gpt-3.5-turbo",
+  });
+
+  await assert.rejects(
+    chat.sendMessage("continue sequence: a b c", ({ cancel }) => {
+      cancel();
+    })
+  );
 });

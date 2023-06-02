@@ -4,6 +4,7 @@ import {
   createCompletions,
 } from "./createCompletions";
 import { retry } from "./retry";
+import { omit } from "./omit";
 
 export const createChat = (
   options: Omit<Omit<Omit<CompletionsOptions, "messages">, "n">, "onMessage">
@@ -39,9 +40,13 @@ export const createChat = (
       throw new Error("No choices returned");
     }
 
+    if (choices.length > 1) {
+      throw new Error("Expected only one choice");
+    }
+
     const choice = choices[0];
 
-    messages.push(choice);
+    messages.push(omit(choice, "finishReason"));
 
     return choice;
   };

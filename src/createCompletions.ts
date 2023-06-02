@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CancelledCompletionError } from "./errors";
 
 const RoleZodSchema = z.enum(["system", "user", "assistant"]);
 
@@ -71,7 +72,7 @@ const CompletionsOptionsZodSchema = z
       .function()
       .args(
         z.object({
-          reader: z.custom<ReadableStreamDefaultReader<string>>(),
+          cancel: z.function().returns(z.void()),
           message: ResponseChunkZodSchema,
         })
       )
@@ -102,7 +103,7 @@ const ChoiceZodSchema = z
   })
   .strict();
 
-type Choice = z.infer<typeof ChoiceZodSchema>;
+export type Choice = z.infer<typeof ChoiceZodSchema>;
 
 const CompletionResponseZodSchema = z.object({
   choices: z.array(ChoiceZodSchema),
@@ -143,6 +144,8 @@ export const createCompletions = async (
 
   const choices: Choice[] = [];
 
+  let cancelled = false;
+
   while (true) {
     const { value, done } = await reader.read();
 
@@ -150,12 +153,21 @@ export const createCompletions = async (
       break;
     }
 
-    for (const chunk of value.split("\n")) {
+    for (const chunk of value
+      .split("\n")
+      .map((chunk) => chunk.trim())
+      .filter(Boolean)) {
+      if (done) {
+        break;
+      }
+
       if (chunk === "") {
         continue;
       }
 
       if (chunk === "data: [DONE]") {
+        await reader.cancel();
+
         break;
       }
 
@@ -168,7 +180,11 @@ export const createCompletions = async (
       );
 
       options.onMessage?.({
-        reader,
+        cancel: () => {
+          cancelled = true;
+
+          reader.cancel();
+        },
         message: responseChunk,
       });
 
@@ -189,6 +205,10 @@ export const createCompletions = async (
         }
       }
     }
+  }
+
+  if (cancelled) {
+    throw new CancelledCompletionError(choices);
   }
 
   return {

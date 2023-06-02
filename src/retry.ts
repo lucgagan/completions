@@ -1,3 +1,5 @@
+import { CancelledCompletionError } from "./errors";
+
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const retry = async <T extends () => Promise<any>>(
@@ -10,6 +12,10 @@ export const retry = async <T extends () => Promise<any>>(
     try {
       return await routine();
     } catch (error) {
+      if (error instanceof CancelledCompletionError) {
+        throw error;
+      }
+
       if (retries === 0) {
         throw error;
       }
