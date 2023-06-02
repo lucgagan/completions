@@ -46,3 +46,16 @@ test("streams progress", async () => {
 
   assert.ok(onMessage.mock.calls.length > 0);
 });
+
+test("get messages", async () => {
+  const chat = createChat({
+    apiKey: OPENAI_API_KEY,
+    model: "gpt-3.5-turbo",
+  });
+
+  await chat.sendMessage('respond with "pong"');
+
+  const messages = await chat.getMessages();
+
+  assert.equal(messages.length, 2);
+});

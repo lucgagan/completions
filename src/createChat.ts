@@ -41,6 +41,8 @@ export const createChat = (
 
     const choice = choices[0];
 
+    messages.push(choice);
+
     return choice;
   };
 
