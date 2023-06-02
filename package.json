@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "p-retry": "^5.1.2",
     "zod": "^3.21.4"
   },
   "author": {

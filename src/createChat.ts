@@ -1,9 +1,10 @@
 import {
   type CompletionsOptions,
   type Message,
+  type CompletionResponse,
   createCompletions,
 } from "./createCompletions";
-import pRetry from "p-retry";
+import { retry } from "./retry";
 
 export const createChat = (
   options: Omit<Omit<Omit<CompletionsOptions, "messages">, "n">, "onMessage">
@@ -21,15 +22,19 @@ export const createChat = (
 
     messages.push(message);
 
-    const request = async () => {
-      return await createCompletions({
+    const result = await retry(() => {
+      return createCompletions({
         messages,
         onMessage,
         ...options,
       });
-    };
+    });
 
-    const { choices } = await pRetry(request, { retries: 3 });
+    if (!result) {
+      throw new Error("No result");
+    }
+
+    const { choices } = result;
 
     if (choices.length === 0) {
       throw new Error("No choices returned");

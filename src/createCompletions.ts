@@ -108,7 +108,7 @@ const CompletionResponseZodSchema = z.object({
   choices: z.array(ChoiceZodSchema),
 });
 
-type CompletionResponse = z.infer<typeof CompletionResponseZodSchema>;
+export type CompletionResponse = z.infer<typeof CompletionResponseZodSchema>;
 
 export const createCompletions = async (
   options: CompletionsOptions
