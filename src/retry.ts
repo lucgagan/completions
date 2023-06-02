@@ -1,6 +1,8 @@
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export const retry = async <T extends () => Promise<any>>(routine: T): Promise<Awaited<ReturnType<T>>> => {
+export const retry = async <T extends () => Promise<any>>(
+  routine: T
+): Promise<Awaited<ReturnType<T>>> => {
   let retries = 3;
   let attempts = 0;
 
@@ -18,5 +20,5 @@ export const retry = async <T extends () => Promise<any>>(routine: T): Promise<A
     await delay(1000);
   }
 
-  throw new Error('Expected to never reach this point');
+  throw new Error("Expected to never reach this point");
 };

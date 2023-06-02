@@ -113,7 +113,7 @@ export type CompletionResponse = z.infer<typeof CompletionResponseZodSchema>;
 export const createCompletions = async (
   options: CompletionsOptions
 ): Promise<CompletionResponse> => {
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
     headers: {
       Authorization: `Bearer ${options.apiKey}`,
       "Content-Type": "application/json",
@@ -140,7 +140,7 @@ export const createCompletions = async (
   const choices: Choice[] = [];
 
   while (true) {
-    const {value, done,} = await reader.read();
+    const { value, done } = await reader.read();
 
     if (done) {
       break;
@@ -150,7 +150,7 @@ export const createCompletions = async (
       if (chunk === "") {
         continue;
       }
-  
+
       if (chunk === "data: [DONE]") {
         break;
       }
@@ -158,7 +158,7 @@ export const createCompletions = async (
       if (!chunk.startsWith("data: ")) {
         throw new Error(`Unexpected message: ${chunk}`);
       }
-  
+
       const responseChunk = ResponseChunkZodSchema.parse(
         JSON.parse(chunk.toString().slice("data: ".length))
       );

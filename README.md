@@ -4,10 +4,10 @@ Node.js SDK for interacting with [OpenAI Chat](https://chat.openai.com/) [Comple
 
 This SDK makes it simple to:
 
-* Implement chat in Node.js and browser
-* [send and receive chat messages](#usage)
-* [save and restore chat conversations](#resuming-conversations)
-* [stream chat responses](#streaming-conversations)
+- Implement chat in Node.js and browser
+- [send and receive chat messages](#usage)
+- [save and restore chat conversations](#resuming-conversations)
+- [stream chat responses](#streaming-conversations)
 
 ## Usage
 
