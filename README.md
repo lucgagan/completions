@@ -4,7 +4,7 @@ Node.js SDK for interacting with [OpenAI Chat](https://chat.openai.com/) [Comple
 
 ## Usage
 
-This `createChat` interacts with the [`/v1/chat/completions`](https://platform.openai.com/docs/api-reference/chat/create) API endpoint.
+`createChat` interacts with the [`/v1/chat/completions`](https://platform.openai.com/docs/api-reference/chat/create) API endpoint.
 
 * It streams the response
 * It tracks the conversations
