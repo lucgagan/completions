@@ -161,7 +161,7 @@ export const createCompletions = async (
     //     "code": "context_length_exceeded"
     //   }
     // }
-    if (value.startsWith('{')) {
+    if (value.startsWith("{")) {
       await reader.cancel();
 
       // As far as I can tell, if the response is an object, then it is an unrecoverable error.
