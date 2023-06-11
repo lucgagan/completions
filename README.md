@@ -9,6 +9,7 @@ This SDK makes it simple to:
 - [save and restore chat conversations](#resuming-conversations)
 - [stream chat responses](#streaming-conversations)
 - [cancel chat responses](#cancelling-responses)
+- [override the API endpoint](#overriding-api)
 
 ## Usage
 
@@ -127,6 +128,20 @@ try {
 
   throw error;
 }
+```
+
+### Overriding API
+
+If you want to use `completions` library against another API endpoint that is compatible with the official API, you can do so by passing `apiUrl` parameter:
+
+```ts
+import { createChat, CancelledCompletionError } from "completions";
+
+const chat = createChat({
+  apiKey: '',
+  apiUrl: 'https://ray.run/api/completions'
+  model: "gpt-3.5-turbo",
+});
 ```
 
 ## My other projects

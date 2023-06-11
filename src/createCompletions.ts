@@ -68,6 +68,7 @@ const ResponseChunkZodSchema = z
  */
 const CompletionsOptionsZodSchema = z
   .object({
+    apiUrl: z.string().optional(),
     onMessage: z
       .function()
       .args(
@@ -114,27 +115,30 @@ export type CompletionResponse = z.infer<typeof CompletionResponseZodSchema>;
 export const createCompletions = async (
   options: CompletionsOptions
 ): Promise<CompletionResponse> => {
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    headers: {
-      Authorization: `Bearer ${options.apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      messages: options.messages,
-      model: options.model,
-      stream: true,
-      temperature: options.temperature,
-      top_p: options.topP,
-      n: options.n,
-      stop: options.stop,
-      frequency_penalty: options.frequencyPenalty,
-      presence_penalty: options.presencePenalty,
-      logit_bias: options.logitBias,
-      max_tokens: options.maxTokens,
-      user: options.user,
-    }),
-    method: "POST",
-  });
+  const response = await fetch(
+    options.apiUrl ?? "https://api.openai.com/v1/chat/completions",
+    {
+      headers: {
+        Authorization: `Bearer ${options.apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messages: options.messages,
+        model: options.model,
+        stream: true,
+        temperature: options.temperature,
+        top_p: options.topP,
+        n: options.n,
+        stop: options.stop,
+        frequency_penalty: options.frequencyPenalty,
+        presence_penalty: options.presencePenalty,
+        logit_bias: options.logitBias,
+        max_tokens: options.maxTokens,
+        user: options.user,
+      }),
+      method: "POST",
+    }
+  );
 
   if (!response.body) {
     throw new Error("Expected response to have a body");
