@@ -2,6 +2,10 @@
 
 Node.js SDK for interacting with [OpenAI Chat](https://chat.openai.com/) [Completions API](https://platform.openai.com/docs/api-reference/chat/create).
 
+Demo:
+
+https://replit.com/@LucGagan/Completions?v=1
+
 This SDK makes it simple to:
 
 - Implement chat in Node.js and browser
