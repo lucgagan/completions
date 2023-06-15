@@ -24,8 +24,6 @@ export const createChat = (
 
     messages.push(message);
 
-    console.log("messages", messages);
-
     const result = await retry(() => {
       return createCompletions({
         messages,

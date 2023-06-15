@@ -79,6 +79,8 @@ const ResponseChunkZodSchema = z
  *    We generally recommend altering this or temperature but not both.
  * @property user - A unique identifier representing your end-user, which can help OpenAI
  *    to monitor and detect abuse.
+ * @property functionCall - Whether or not the model is allowed to call a function.
+ * @property functions - Specifications for functions which the model can call.
  */
 const CompletionsOptionsZodSchema = z
   .object({
@@ -105,7 +107,7 @@ const CompletionsOptionsZodSchema = z
     logitBias: z.record(z.number()).optional(),
     maxTokens: z.number().optional(),
     user: z.string().optional(),
-    function_call: z.enum(["auto", "none"]).optional(),
+    functionCall: z.enum(["auto", "none"]).optional(),
     functions: z
       .array(
         z.object({
@@ -168,7 +170,7 @@ export const createCompletions = async (
         logit_bias: options.logitBias,
         max_tokens: options.maxTokens,
         user: options.user,
-        function_call: options.function_call,
+        function_call: options.functionCall,
         functions: options.functions,
       }),
       method: "POST",

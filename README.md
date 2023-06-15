@@ -52,6 +52,8 @@ import { createChat } from "completions";
  *    We generally recommend altering this or temperature but not both.
  * @property user - A unique identifier representing your end-user, which can help OpenAI
  *    to monitor and detect abuse.
+ * @property functionCall - Whether or not the model is allowed to call a function.
+ * @property functions - Specifications for functions which the model can call.
  */
 const chat = createChat({
   apiKey: process.env.OPENAI_API_KEY,

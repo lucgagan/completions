@@ -2,6 +2,7 @@ import * as dotenv from "dotenv";
 import { join } from "path";
 import { createChat } from "./createChat";
 import { strict as assert } from "node:assert";
+import { test } from "node:test";
 
 dotenv.config({ path: join(__dirname, "..", ".env") });
 
@@ -15,7 +16,7 @@ if (!OPENAI_API_KEY) {
   throw new Error("OPENAI_API_KEY must be set");
 }
 
-(async () => {
+test("Adds a function to the chat model and calls it, then does one more message for completeness", async () => {
   const chat = createChat({
     apiKey: OPENAI_API_KEY,
     model: "gpt-3.5-turbo-0613",
@@ -36,7 +37,7 @@ if (!OPENAI_API_KEY) {
         },
       },
     ],
-    function_call: "auto",
+    functionCall: "auto",
   });
 
   await chat.sendMessage("What is the weather in Albuquerque?");
@@ -63,4 +64,4 @@ if (!OPENAI_API_KEY) {
   // console.log(response3.content);
 
   assert(/yes/i.test(response3.content));
-})();
+});
