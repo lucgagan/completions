@@ -60,7 +60,7 @@ const chat = createChat({
   // model: 'gpt-4',
 });
 
-await chat.sentMessage("Ping");
+await chat.sendMessage("Ping");
 
 // {
 //   response: { role: 'assistant', content: 'Pong', finishReason: 'stop' }
@@ -75,7 +75,7 @@ const chat = createChat({
   model: "gpt-3.5-turbo",
 });
 
-await chat.sentMessage("pick a random number");
+await chat.sendMessage("pick a random number");
 
 // Gets all messages sent and received.
 // This can be used to resume chat at a later time.
@@ -93,7 +93,7 @@ for (const message of messages) {
   chat.addMessage(message);
 }
 
-await chat.sentMessage("what random number did you pick?");
+await chat.sendMessage("what random number did you pick?");
 ```
 
 ### Streaming conversations
@@ -104,7 +104,7 @@ const chat = createChat({
   model: "gpt-3.5-turbo",
 });
 
-await chat.sentMessage("continue the sequence: a b c", (message) => {
+await chat.sendMessage("continue the sequence: a b c", (message) => {
   console.log(message);
 });
 ```
