@@ -13,11 +13,13 @@ export const createChat = (
 
   const sendMessage = async (
     prompt: string,
-    onMessage?: CompletionsOptions["onMessage"]
+    onMessage?: CompletionsOptions["onMessage"],
+    functionName?: string
   ) => {
     const message: Message = {
       content: prompt,
-      role: "user",
+      role: !!functionName ? "function" : "user",
+      name: functionName,
     };
 
     messages.push(message);

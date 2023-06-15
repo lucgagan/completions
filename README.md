@@ -14,6 +14,7 @@ This SDK makes it simple to:
 - [stream chat responses](#streaming-conversations)
 - [cancel chat responses](#cancelling-responses)
 - [override the API endpoint](#overriding-api)
+- [utilize chat functions](#utilizing-functions)
 
 ## Usage
 
@@ -52,6 +53,8 @@ import { createChat } from "completions";
  *    We generally recommend altering this or temperature but not both.
  * @property user - A unique identifier representing your end-user, which can help OpenAI
  *    to monitor and detect abuse.
+ * @property functionCall - Whether or not the model is allowed to call a function.
+ * @property functions - Specifications for functions which the model can call.
  */
 const chat = createChat({
   apiKey: process.env.OPENAI_API_KEY,
@@ -60,7 +63,7 @@ const chat = createChat({
   // model: 'gpt-4',
 });
 
-await chat.sentMessage("Ping");
+await chat.sendMessage("Ping");
 
 // {
 //   response: { role: 'assistant', content: 'Pong', finishReason: 'stop' }
@@ -75,7 +78,7 @@ const chat = createChat({
   model: "gpt-3.5-turbo",
 });
 
-await chat.sentMessage("pick a random number");
+await chat.sendMessage("pick a random number");
 
 // Gets all messages sent and received.
 // This can be used to resume chat at a later time.
@@ -93,7 +96,7 @@ for (const message of messages) {
   chat.addMessage(message);
 }
 
-await chat.sentMessage("what random number did you pick?");
+await chat.sendMessage("what random number did you pick?");
 ```
 
 ### Streaming conversations
@@ -104,7 +107,7 @@ const chat = createChat({
   model: "gpt-3.5-turbo",
 });
 
-await chat.sentMessage("continue the sequence: a b c", (message) => {
+await chat.sendMessage("continue the sequence: a b c", (message) => {
   console.log(message);
 });
 ```
@@ -146,6 +149,60 @@ const chat = createChat({
   apiUrl: 'https://ray.run/api/completions'
   model: "gpt-3.5-turbo",
 });
+```
+
+### Utilizing Functions
+
+The OpenAI chat models can embed functions directly into the system prompt in a special format such that the model has better understanding of them and can know when to use them. ([see more documentation](https://platform.openai.com/docs/guides/gpt/function-calling))
+
+To use this feature you must define a prototype and provide a description for the function when you create the chat. The model will decide when it wants to use the function. It is up to you implement the logic around checking if the model wants to use them.
+
+```ts
+import { createChat } from "./createChat";
+
+const chat = createChat({
+  apiKey: OPENAI_API_KEY,
+  model: "gpt-3.5-turbo-0613",
+  functions: [
+    {
+      name: "get_current_weather",
+      description: "Get the current weather in a given location",
+      parameters: {
+        type: "object",
+        properties: {
+          location: {
+            type: "string",
+            description: "The city and state, e.g. San Francisco, CA",
+          },
+          unit: { type: "string", enum: ["celsius", "fahrenheit"] },
+        },
+        required: ["location"],
+      },
+    },
+  ],
+  functionCall: "auto",
+});
+
+const responseWantingFunction = await chat.sendMessage("What is the weather in Albuquerque?");
+
+if (responseWantingFunction.function_call?.name === "get_current_weather") {
+  const response = await chat.sendMessage(
+    JSON.stringify({
+      location: "Albuquerque",
+      temperature: "72",
+      unit: "fahrenheit",
+      forecast: ["sunny", "windy"],
+    }),
+    undefined,
+    "get_current_weather"
+  );
+
+  console.log(response.content);
+  // "The weather in Albuquerque is 72 degrees fahrenheit, sunny with a light breeze."
+} else {
+  // handle responses like normal otherwise
+}
+
 ```
 
 ## My other projects
