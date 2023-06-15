@@ -2,6 +2,10 @@ import { strict as assert } from "node:assert";
 import { test, mock } from "node:test";
 import { createChat } from "./createChat";
 import { Message } from "./createCompletions";
+import dotenv from "dotenv";
+import { join } from "path";
+
+dotenv.config({ path: join(__dirname, "..", ".env") });
 
 const { OPENAI_API_KEY } = process.env;
 

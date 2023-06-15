@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { CancelledCompletionError, UnrecoverableRemoteError } from "./errors";
 
-const RoleZodSchema = z.enum(["system", "user", "assistant"]);
+const RoleZodSchema = z.enum(["system", "user", "assistant", "function"]);
 
 type Role = z.infer<typeof RoleZodSchema>;
 
@@ -10,6 +10,12 @@ const MessageZodSchema = z
     content: z.string(),
     role: RoleZodSchema,
     name: z.string().optional(),
+    function_call: z
+      .object({
+        name: z.string(),
+        arguments: z.string(),
+      })
+      .optional(),
   })
   .strict();
 
@@ -26,6 +32,14 @@ const ResponseChunkZodSchema = z
         index: z.number(),
         finish_reason: z.string().nullable(),
         delta: z.union([
+          z.object({
+            content: z.null().optional(),
+            role: RoleZodSchema.optional(),
+            function_call: z.object({
+              name: z.string().optional(),
+              arguments: z.string(),
+            }),
+          }),
           z.object({
             content: z.string(),
           }),
@@ -91,6 +105,19 @@ const CompletionsOptionsZodSchema = z
     logitBias: z.record(z.number()).optional(),
     maxTokens: z.number().optional(),
     user: z.string().optional(),
+    function_call: z.enum(["auto", "none"]).optional(),
+    functions: z
+      .array(
+        z.object({
+          name: z.string(),
+          description: z.string(),
+          // TODO I need to fix this such that it represent the actual schema
+          // This mostly entails finding documentation for the function spec
+          parameters: z.any(),
+          required: z.array(z.string()),
+        })
+      )
+      .optional(),
   })
   .strict();
 
@@ -99,8 +126,14 @@ export type CompletionsOptions = z.infer<typeof CompletionsOptionsZodSchema>;
 const ChoiceZodSchema = z
   .object({
     role: RoleZodSchema,
-    content: z.string(),
+    content: z.string().optional(),
     finishReason: z.string(),
+    function_call: z
+      .object({
+        name: z.string(),
+        arguments: z.string(),
+      })
+      .optional(),
   })
   .strict();
 
@@ -135,6 +168,8 @@ export const createCompletions = async (
         logit_bias: options.logitBias,
         max_tokens: options.maxTokens,
         user: options.user,
+        function_call: options.function_call,
+        functions: options.functions,
       }),
       method: "POST",
     }
@@ -222,12 +257,30 @@ export const createCompletions = async (
           choices[choice.index].content = choices[choice.index].content ?? "";
           choices[choice.index].content += choice.delta.content;
         }
+
+        if ("function_call" in choice.delta) {
+          choices[choice.index].function_call = choices[choice.index]
+            .function_call ?? { name: "", arguments: "" };
+          choices[choice.index].function_call.name +=
+            choice.delta.function_call.name ?? "";
+          choices[choice.index].function_call.arguments +=
+            choice.delta.function_call.arguments ?? "";
+        }
       }
     }
   }
 
   if (cancelled) {
     throw new CancelledCompletionError(choices);
+  }
+
+  // When replying to after a function return, the role is not set, so we need to set it ourselves.
+  // I suspect that this is an oversight by the api since it requires the role be set in
+  // the subsequent calls to the endpoint for the response message from the function.
+  for (const choice of choices) {
+    if (choice.role === undefined) {
+      choice.role = "assistant";
+    }
   }
 
   return {
