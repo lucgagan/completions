@@ -12,10 +12,6 @@ if (!OPENAI_API_KEY) {
   throw new Error("OPENAI_API_KEY must be set");
 }
 
-if (!OPENAI_API_KEY) {
-  throw new Error("OPENAI_API_KEY must be set");
-}
-
 test("Adds a function to the chat model and calls it, then does one more message for completeness", async () => {
   const chat = createChat({
     apiKey: OPENAI_API_KEY,
@@ -40,11 +36,16 @@ test("Adds a function to the chat model and calls it, then does one more message
     functionCall: "auto",
   });
 
-  await chat.sendMessage("What is the weather in Albuquerque?");
+  const response = await chat.sendMessage(
+    "What is the weather in Albuquerque?"
+  );
 
-  // console.log(response.content);
+  assert(
+    response.role === "assistant" &&
+      response.function_call?.name === "get_current_weather"
+  );
 
-  await chat.sendMessage(
+  const response2 = await chat.sendMessage(
     JSON.stringify({
       location: "Albuquerque",
       temperature: "72",
@@ -55,7 +56,7 @@ test("Adds a function to the chat model and calls it, then does one more message
     "get_current_weather"
   );
 
-  // console.log(response2.content);
+  assert(response2.content?.length > 0 && response2.role === "assistant");
 
   const response3 = await chat.sendMessage(
     "Is this too hot to have a pet polar bear?"
