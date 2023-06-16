@@ -1,3 +1,3 @@
-export { createChat } from "./createChat";
-export { type Message } from "./createCompletions";
+export { createChat, type Chat } from "./createChat";
+export { type Message, type CompletionsOptions } from "./createCompletions";
 export { CancelledCompletionError, UnrecoverableRemoteError } from "./errors";

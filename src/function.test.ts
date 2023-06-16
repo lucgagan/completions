@@ -12,7 +12,7 @@ if (!OPENAI_API_KEY) {
   throw new Error("OPENAI_API_KEY must be set");
 }
 
-test("Adds a function to the chat model and calls it, then does one more message for completeness", async () => {
+test("Tests function calling and forcing user facing response", async () => {
   const chat = createChat({
     apiKey: OPENAI_API_KEY,
     model: "gpt-3.5-turbo-0613",
@@ -62,7 +62,21 @@ test("Adds a function to the chat model and calls it, then does one more message
     "Is this too hot to have a pet polar bear?"
   );
 
-  // console.log(response3.content);
-
   assert(/yes/i.test(response3.content));
+
+  // Test option overriding to force the user facing response
+  const response4 = await chat.sendMessage(
+    "What is the weather in Chicago?",
+    undefined,
+    undefined,
+    {
+      functionCall: "none",
+    }
+  );
+
+  assert(
+    response4.role === "assistant" &&
+      !response4.function_call &&
+      response4.content?.length > 0
+  );
 });
