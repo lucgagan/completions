@@ -112,11 +112,9 @@ const CompletionsOptionsZodSchema = z
       .array(
         z.object({
           name: z.string(),
-          description: z.string(),
-          // TODO I need to fix this such that it represent the actual schema
-          // This mostly entails finding documentation for the function spec
-          parameters: z.any(),
-          required: z.array(z.string()),
+          description: z.string().optional(),
+          // TODO This takes a json schema, so we should validate we have a valid json schema
+          parameters: z.any().optional(),
         })
       )
       .optional(),
