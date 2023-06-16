@@ -30,11 +30,11 @@ test("remembers conversation", async () => {
     model: "gpt-3.5-turbo",
   });
 
-  await chat.sendMessage("My name is Luc");
+  await chat.sendMessage("My name is John");
 
   const response = await chat.sendMessage("What is my name?");
 
-  assert.match(response.content, /Luc/);
+  assert.match(response.content, /John/);
 });
 
 test("streams progress", async () => {
@@ -60,7 +60,7 @@ test("get messages", async () => {
 
   await chat.sendMessage('respond with "pong"');
 
-  const messages = await chat.getMessages();
+  const messages = chat.getMessages();
 
   assert.equal(messages.length, 2);
 });
