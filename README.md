@@ -183,7 +183,9 @@ const chat = createChat({
   functionCall: "auto",
 });
 
-const responseWantingFunction = await chat.sendMessage("What is the weather in Albuquerque?");
+const responseWantingFunction = await chat.sendMessage(
+  "What is the weather in Albuquerque?"
+);
 
 if (responseWantingFunction.function_call?.name === "get_current_weather") {
   const response = await chat.sendMessage(
@@ -202,7 +204,6 @@ if (responseWantingFunction.function_call?.name === "get_current_weather") {
 } else {
   // handle responses like normal otherwise
 }
-
 ```
 
 ## My other projects
