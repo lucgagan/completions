@@ -7,14 +7,15 @@ import { retry } from "./retry";
 import { omit } from "./omit";
 
 export const createChat = (
-  options: Omit<Omit<Omit<CompletionsOptions, "messages">, "n">, "onMessage">
+  options: Omit<Omit<CompletionsOptions, "n">, "onMessage">
 ) => {
-  const messages: Message[] = [];
+  const messages: Message[] = options.messages ?? [];
 
   const sendMessage = async (
     prompt: string,
     onMessage?: CompletionsOptions["onMessage"],
-    functionName?: string
+    functionName?: string,
+    optionsOverrides?: Partial<Omit<typeof options, "messages">>
   ) => {
     const message: Message = {
       content: prompt,
@@ -29,6 +30,7 @@ export const createChat = (
         messages,
         onMessage,
         ...options,
+        ...optionsOverrides,
       });
     });
 
@@ -63,3 +65,5 @@ export const createChat = (
     sendMessage,
   };
 };
+
+export type Chat = ReturnType<typeof createChat>;
