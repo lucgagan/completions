@@ -100,3 +100,97 @@ test("cancel response", async () => {
     })
   );
 });
+
+test("calls user defined function", async () => {
+  const chat = createChat({
+    apiKey: OPENAI_API_KEY,
+    model: "gpt-3.5-turbo-0613",
+    functions: [
+      {
+        name: "get_current_weather",
+        description: "Get the current weather in a given location",
+        parameters: {
+          type: "object",
+          properties: {
+            location: {
+              type: "string",
+              description: "The city and state, e.g. San Francisco, CA",
+            },
+            unit: { type: "string", enum: ["celsius", "fahrenheit"] },
+          },
+          required: ["location"],
+        },
+      },
+    ],
+    functionCall: "auto",
+  });
+
+  const response = await chat.sendMessage(
+    "What is the weather in Albuquerque?"
+  );
+
+  assert.equal(response.role, 'assistant');
+  assert.equal(response.function_call?.name, 'get_current_weather');
+});
+
+test("calls user defined function", async () => {
+  const chat = createChat({
+    apiKey: OPENAI_API_KEY,
+    model: "gpt-3.5-turbo-0613",
+    functions: [
+      {
+        name: "get_current_weather",
+        description: "Get the current weather in a given location",
+        parameters: {
+          type: "object",
+          properties: {
+            location: {
+              type: "string",
+              description: "The city and state, e.g. San Francisco, CA",
+            },
+            unit: { type: "string", enum: ["celsius", "fahrenheit"] },
+          },
+          required: ["location"],
+        },
+      },
+    ],
+    functionCall: "auto",
+  });
+
+  const response1 = await chat.sendMessage(
+    JSON.stringify({
+      location: "Albuquerque",
+      temperature: "72",
+      unit: "fahrenheit",
+      forecast: ["sunny", "windy"],
+    }),
+    undefined,
+    "get_current_weather"
+  );
+
+  assert.equal(response1.role, 'assistant');
+  assert.match(response1.content, /the current weather in Albuquerque/i);
+
+  const response2 = await chat.sendMessage(
+    "Is this too hot to have a pet polar bear?"
+  );
+
+  assert.match(response2.content, /yes/i);
+
+  // Test option overriding to force the user facing response
+  const response3 = await chat.sendMessage(
+    "What is the weather in Chicago?",
+    undefined,
+    undefined,
+    {
+      functionCall: "none",
+    }
+  );
+  
+  // Expecting a variation of:
+  // Apologies, but I cannot provide real-time data.
+  // I'm sorry, but I am currently not able to provide real-time weather information.
+  assert.match(response3.content, /(sorry|cannot)/i);
+  assert.equal(response3.role, 'assistant');
+  assert.equal(response3.function_call, undefined);
+});

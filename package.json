@@ -46,7 +46,7 @@
   "scripts": {
     "lint": "prettier --check ./src",
     "build": "tsc --noEmit false",
-    "test": "tsx --test src/createChat.test.ts src/function.test.ts",
+    "test": "tsx --test src/createChat.test.ts",
     "semantic-release": "semantic-release"
   },
   "version": "0.0.0-development"
