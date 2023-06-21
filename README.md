@@ -14,6 +14,7 @@ This SDK makes it simple to:
 - [stream chat responses](#streaming-conversations)
 - [cancel chat responses](#cancelling-responses)
 - [override the API endpoint](#overriding-api)
+- [per message option overrides](#per-message-option-overrides)
 - [utilize chat functions](#utilizing-functions)
 
 ## Usage
@@ -151,7 +152,29 @@ const chat = createChat({
 });
 ```
 
-### Utilizing Functions
+### Per message option overrides
+
+You can override most of the options for the chat on a per-message level. Examples of when this is useful is when you want to force a user facing response when using functions, or if you want to modify something like logit bias for a single message.
+
+```ts
+const chat = createChat({
+  apiKey: OPENAI_API_KEY,
+  model: "gpt-3.5-turbo",
+});
+
+const response = await chat.sendMessage(
+  "what is the next token in this sequence: a b c",
+  undefined,
+  undefined,
+  // token 34093 is "boo"
+  { maxTokens: 1, logitBias: { "34093": 100 } }
+);
+
+console.log(response.content);
+// boo
+```
+
+### Utilizing functions
 
 The OpenAI chat models can embed functions directly into the system prompt in a special format such that the model has better understanding of them and can know when to use them. ([see more documentation](https://platform.openai.com/docs/guides/gpt/function-calling))
 
