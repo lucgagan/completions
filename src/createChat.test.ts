@@ -194,3 +194,21 @@ test("overrides function call", async () => {
   assert.equal(response3.role, "assistant");
   assert.equal(response3.function_call, undefined);
 });
+
+test("per message options override", async () => {
+  const chat = createChat({
+    apiKey: OPENAI_API_KEY,
+    model: "gpt-3.5-turbo",
+  });
+
+  const response = await chat.sendMessage(
+    "what is the next token in this sequence: a b c",
+    undefined,
+    undefined,
+    // token 34093 is "boo"
+    { maxTokens: 1, logitBias: { "34093": 100 } }
+  );
+
+  assert.equal(response.finishReason, "length");
+  assert.equal(response.content, "boo");
+});
