@@ -7,9 +7,9 @@ import { retry } from "./retry";
 import { omit } from "./omit";
 
 export const createChat = (
-  options: Omit<Omit<CompletionsOptions, "n">, "onMessage">
+  options: Omit<Omit<Omit<CompletionsOptions, "messages">, "n">, "onMessage">
 ) => {
-  const messages: Message[] = options.messages ?? [];
+  const messages: Message[] = [];
 
   const sendMessage = async (
     prompt: string,

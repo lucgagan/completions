@@ -242,29 +242,36 @@ export const createCompletions = async (
         message: responseChunk,
       });
 
-      for (const choice of responseChunk.choices) {
-        choices[choice.index] = choices[choice.index] ?? {};
+      for (const choiceChunk of responseChunk.choices) {
+        const index = choiceChunk.index;
 
-        if (choice.finish_reason) {
-          choices[choice.index].finishReason = choice.finish_reason;
+        const choice = (choices[index] = choices[index] ?? {});
+
+        if (
+          "finish_reason" in choiceChunk &&
+          choiceChunk.finish_reason !== null
+        ) {
+          choice.finishReason = choiceChunk.finish_reason;
         }
 
-        if ("role" in choice.delta) {
-          choices[choice.index].role = choice.delta.role as Role;
+        if ("role" in choiceChunk.delta) {
+          choice.role = choiceChunk.delta.role as Role;
         }
 
-        if ("content" in choice.delta) {
-          choices[choice.index].content = choices[choice.index].content ?? "";
-          choices[choice.index].content += choice.delta.content;
+        if ("content" in choiceChunk.delta) {
+          choice.content = choice.content ?? "";
+          choice.content += choiceChunk.delta.content;
         }
 
-        if ("function_call" in choice.delta) {
-          choices[choice.index].function_call = choices[choice.index]
-            .function_call ?? { name: "", arguments: "" };
-          choices[choice.index].function_call.name +=
-            choice.delta.function_call.name ?? "";
-          choices[choice.index].function_call.arguments +=
-            choice.delta.function_call.arguments ?? "";
+        if ("function_call" in choiceChunk.delta) {
+          choice.function_call = choice.function_call ?? {
+            name: "",
+            arguments: "",
+          };
+          choice.function_call.name +=
+            choiceChunk.delta.function_call.name ?? "";
+          choice.function_call.arguments +=
+            choiceChunk.delta.function_call.arguments ?? "";
         }
       }
     }
