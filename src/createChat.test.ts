@@ -129,8 +129,8 @@ test("calls user defined function", async () => {
     "What is the weather in Albuquerque?"
   );
 
-  assert.equal(response.role, 'assistant');
-  assert.equal(response.function_call?.name, 'get_current_weather');
+  assert.equal(response.role, "assistant");
+  assert.equal(response.function_call?.name, "get_current_weather");
 });
 
 test("overrides function call", async () => {
@@ -168,7 +168,7 @@ test("overrides function call", async () => {
     "get_current_weather"
   );
 
-  assert.equal(response1.role, 'assistant');
+  assert.equal(response1.role, "assistant");
   assert.match(response1.content, /the current weather in Albuquerque/i);
 
   const response2 = await chat.sendMessage(
@@ -186,11 +186,11 @@ test("overrides function call", async () => {
       functionCall: "none",
     }
   );
-  
+
   // Expecting a variation of:
   // Apologies, but I cannot provide real-time data.
   // I'm sorry, but I am currently not able to provide real-time weather information.
   assert.match(response3.content, /(sorry|cannot)/i);
-  assert.equal(response3.role, 'assistant');
+  assert.equal(response3.role, "assistant");
   assert.equal(response3.function_call, undefined);
 });
