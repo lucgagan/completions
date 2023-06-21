@@ -126,7 +126,7 @@ export type CompletionsOptions = z.infer<typeof CompletionsOptionsZodSchema>;
 const ChoiceZodSchema = z
   .object({
     role: RoleZodSchema,
-    content: z.string().optional(),
+    content: z.string(),
     finishReason: z.string(),
     function_call: z
       .object({

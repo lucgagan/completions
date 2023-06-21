@@ -133,7 +133,7 @@ test("calls user defined function", async () => {
   assert.equal(response.function_call?.name, 'get_current_weather');
 });
 
-test("calls user defined function", async () => {
+test("overrides function call", async () => {
   const chat = createChat({
     apiKey: OPENAI_API_KEY,
     model: "gpt-3.5-turbo-0613",
