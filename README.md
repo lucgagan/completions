@@ -133,8 +133,10 @@ const chat = createChat({
 });
 
 try {
-  await chat.sendMessage("continue sequence: a b c", ({ cancel }) => {
-    cancel();
+  await chat.sendMessage("continue sequence: a b c", {
+    onUpdate: ({ cancel }) => {
+      cancel();
+    },
   });
 } catch (error) {
   if (error instanceof CancelledCompletion) {
@@ -172,11 +174,9 @@ const chat = createChat({
 const response = await chat.sendMessage(
   "what is the next token in this sequence: a b c",
   {
-    options: {
-      maxTokens: 1,
-      // token 34093 is "boo"
-      logitBias: { "34093": 100 },
-    },
+    maxTokens: 1,
+    // token 34093 is "boo"
+    logitBias: { "34093": 100 },
   }
 );
 

@@ -7,13 +7,9 @@ import { retry } from "./retry";
 import { omit } from "./omit";
 import { createUserFunction, type UserFunction } from "./createUserFunction";
 
-type MessageOptions = {
-  functionName?: string;
-  onUpdate?: CompletionsOptions["onUpdate"];
-  options?: Partial<
-    Omit<Omit<Omit<CompletionsOptions, "messages">, "n">, "functions">
-  >;
-};
+type MessageOptions = Partial<
+  Omit<Omit<Omit<CompletionsOptions, "messages">, "n">, "functions">
+>;
 
 /**
  * @property apiKey - OpenAI API key.
@@ -81,7 +77,7 @@ export const createChat = (
         messages,
         onUpdate: messageOptions?.onUpdate,
         ...options,
-        ...messageOptions?.options,
+        ...messageOptions,
       });
     });
 

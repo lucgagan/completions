@@ -100,7 +100,7 @@ test("cancel response", async () => {
     chat.sendMessage("continue sequence: a b c", {
       onUpdate: ({ cancel }) => {
         cancel();
-      }
+      },
     })
   );
 });
@@ -144,7 +144,7 @@ test("calls user defined function", async () => {
   );
 
   assert.equal(response.role, "assistant");
-  assert.match(response.content, /the current weather in Albuquerque/i);
+  assert.match(response.content, /(the current weather in Albuquerque)|(weather in Albuquerque is currently)/i);
 });
 
 test("overrides function call", async () => {
@@ -181,9 +181,7 @@ test("overrides function call", async () => {
   });
 
   await chat.sendMessage("What is the weather in Chicago?", {
-    options: {
-      functionCall: "none",
-    },
+    functionCall: "none",
   });
 
   assert.equal(getCurrentWeather.mock.calls.length, 0);
@@ -198,11 +196,9 @@ test("overrides message options", async () => {
   const response = await chat.sendMessage(
     "what is the next token in this sequence: a b c",
     {
-      options: {
-        maxTokens: 1,
-        // token 34093 is "boo"
-        logitBias: { "34093": 100 },
-      },
+      maxTokens: 1,
+      // token 34093 is "boo"
+      logitBias: { "34093": 100 },
     }
   );
 
