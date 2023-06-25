@@ -195,7 +195,7 @@ test("overrides function call", async () => {
   assert.equal(response3.function_call, undefined);
 });
 
-test("per message options override", async () => {
+test("overrides message options", async () => {
   const chat = createChat({
     apiKey: OPENAI_API_KEY,
     model: "gpt-3.5-turbo",
