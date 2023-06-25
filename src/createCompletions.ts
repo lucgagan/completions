@@ -85,7 +85,7 @@ const ResponseChunkZodSchema = z
 const CompletionsOptionsZodSchema = z
   .object({
     apiUrl: z.string().optional(),
-    onMessage: z
+    onUpdate: z
       .function()
       .args(
         z.object({
@@ -233,7 +233,7 @@ export const createCompletions = async (
         JSON.parse(chunk.toString().slice("data: ".length))
       );
 
-      options.onMessage?.({
+      options.onUpdate?.({
         cancel: () => {
           cancelled = true;
 

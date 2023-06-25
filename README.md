@@ -113,8 +113,10 @@ const chat = createChat({
   model: "gpt-3.5-turbo",
 });
 
-await chat.sendMessage("continue the sequence: a b c", (message) => {
-  console.log(message);
+await chat.sendMessage("continue the sequence: a b c", {
+  onUpdate: (message) => {
+    console.log(message);
+  }
 });
 ```
 
@@ -169,10 +171,13 @@ const chat = createChat({
 
 const response = await chat.sendMessage(
   "what is the next token in this sequence: a b c",
-  undefined,
-  undefined,
-  // token 34093 is "boo"
-  { maxTokens: 1, logitBias: { "34093": 100 } }
+  {
+    options: {
+      maxTokens: 1,
+      // token 34093 is "boo"
+      logitBias: { "34093": 100 }
+    }
+  }
 );
 
 console.log(response.content);
@@ -183,7 +188,7 @@ console.log(response.content);
 
 The OpenAI chat models can embed functions directly into the system prompt in a special format such that the model has better understanding of them and can know when to use them. ([see more documentation](https://platform.openai.com/docs/guides/gpt/function-calling))
 
-To use this feature you must define a prototype and provide a description for the function when you create the chat. The model will decide when it wants to use the function. It is up to you implement the logic around checking if the model wants to use them.
+To use this feature you must define a prototype and provide a description for the function when you create the chat. The model will decide when it wants to use the function. It is up to you to implement the logic around checking if the model wants to use them.
 
 ```ts
 import { createChat } from "./createChat";
@@ -223,8 +228,9 @@ if (responseWantingFunction.function_call?.name === "get_current_weather") {
       unit: "fahrenheit",
       forecast: ["sunny", "windy"],
     }),
-    undefined,
-    "get_current_weather"
+    {
+      functionName: "get_current_weather"
+    }
   );
 
   console.log(response.content);

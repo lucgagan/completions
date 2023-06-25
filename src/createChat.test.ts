@@ -43,13 +43,15 @@ test("streams progress", async () => {
     model: "gpt-3.5-turbo",
   });
 
-  const onMessage = mock.fn((message) => {
+  const onUpdate = mock.fn((message) => {
     console.log(message);
   });
 
-  await chat.sendMessage("continue sequence: a b c", onMessage);
+  await chat.sendMessage("continue sequence: a b c", {
+    onUpdate,
+  });
 
-  assert.ok(onMessage.mock.calls.length > 0);
+  assert.ok(onUpdate.mock.calls.length > 0);
 });
 
 test("get messages", async () => {
@@ -95,8 +97,10 @@ test("cancel response", async () => {
   });
 
   await assert.rejects(
-    chat.sendMessage("continue sequence: a b c", ({ cancel }) => {
-      cancel();
+    chat.sendMessage("continue sequence: a b c", {
+      onUpdate: ({ cancel }) => {
+        cancel();
+      }
     })
   );
 });
@@ -133,7 +137,7 @@ test("calls user defined function", async () => {
   assert.equal(response.function_call?.name, "get_current_weather");
 });
 
-test("overrides function call", async () => {
+test.only("overrides function call", async () => {
   const chat = createChat({
     apiKey: OPENAI_API_KEY,
     model: "gpt-3.5-turbo-0613",
@@ -164,8 +168,9 @@ test("overrides function call", async () => {
       unit: "fahrenheit",
       forecast: ["sunny", "windy"],
     }),
-    undefined,
-    "get_current_weather"
+    {
+      functionName: "get_current_weather",
+    }
   );
 
   assert.equal(response1.role, "assistant");
@@ -180,10 +185,10 @@ test("overrides function call", async () => {
   // Test option overriding to force the user facing response
   const response3 = await chat.sendMessage(
     "What is the weather in Chicago?",
-    undefined,
-    undefined,
     {
-      functionCall: "none",
+      options: {
+        functionCall: "none",
+      }
     }
   );
 
@@ -203,10 +208,10 @@ test("overrides message options", async () => {
 
   const response = await chat.sendMessage(
     "what is the next token in this sequence: a b c",
-    undefined,
-    undefined,
     // token 34093 is "boo"
-    { maxTokens: 1, logitBias: { "34093": 100 } }
+    {
+      options: { maxTokens: 1, logitBias: { "34093": 100 } }
+    }
   );
 
   assert.equal(response.finishReason, "length");

@@ -6,6 +6,12 @@ import {
 import { retry } from "./retry";
 import { omit } from "./omit";
 
+type MessageOptions = {
+  functionName?: string,
+  onUpdate?: CompletionsOptions["onUpdate"],
+  options?: Partial<Omit<Omit<CompletionsOptions, "messages">, "n">>,
+};
+
 /**
  * @property apiKey - OpenAI API key.
  * @property frequencyPenalty - Number between -2.0 and 2.0. Positive values penalize new
@@ -42,20 +48,18 @@ import { omit } from "./omit";
  *    to monitor and detect abuse.
  */
 export const createChat = (
-  options: Omit<Omit<Omit<CompletionsOptions, "messages">, "n">, "onMessage">
+  options: Omit<Omit<Omit<CompletionsOptions, "messages">, "n">, "onUpdate">
 ) => {
   const messages: Message[] = [];
 
   const sendMessage = async (
     prompt: string,
-    onMessage?: CompletionsOptions["onMessage"],
-    functionName?: string,
-    optionsOverrides?: Partial<Omit<typeof options, "messages">>
+    messageOptions?: MessageOptions,
   ) => {
     const message: Message = {
       content: prompt,
-      role: !!functionName ? "function" : "user",
-      name: functionName,
+      role: !!messageOptions?.functionName ? "function" : "user",
+      name: messageOptions?.functionName,
     };
 
     messages.push(message);
@@ -63,9 +67,9 @@ export const createChat = (
     const result = await retry(() => {
       return createCompletions({
         messages,
-        onMessage,
+        onUpdate: messageOptions?.onUpdate,
         ...options,
-        ...optionsOverrides,
+        ...messageOptions?.options,
       });
     });
 
@@ -86,6 +90,8 @@ export const createChat = (
     const choice = choices[0];
 
     messages.push(omit(choice, "finishReason"));
+
+    console.log(messages);
 
     return choice;
   };
