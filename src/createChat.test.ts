@@ -106,6 +106,15 @@ test("cancel response", async () => {
 });
 
 test("calls user defined function", async () => {
+  const getCurrentWeather = mock.fn(() => {
+    return {
+      location: "Albuquerque",
+      temperature: "72",
+      unit: "fahrenheit",
+      forecast: ["sunny", "windy"],
+    };
+  });
+
   const chat = createChat({
     apiKey: OPENAI_API_KEY,
     model: "gpt-3.5-turbo-0613",
@@ -124,6 +133,7 @@ test("calls user defined function", async () => {
           },
           required: ["location"],
         },
+        function: getCurrentWeather,
       },
     ],
     functionCall: "auto",
@@ -134,10 +144,19 @@ test("calls user defined function", async () => {
   );
 
   assert.equal(response.role, "assistant");
-  assert.equal(response.function_call?.name, "get_current_weather");
+  assert.match(response.content, /the current weather in Albuquerque/i);
 });
 
-test.only("overrides function call", async () => {
+test("overrides function call", async () => {
+  const getCurrentWeather = mock.fn(() => {
+    return {
+      location: "Albuquerque",
+      temperature: "72",
+      unit: "fahrenheit",
+      forecast: ["sunny", "windy"],
+    };
+  });
+
   const chat = createChat({
     apiKey: OPENAI_API_KEY,
     model: "gpt-3.5-turbo-0613",
@@ -156,48 +175,18 @@ test.only("overrides function call", async () => {
           },
           required: ["location"],
         },
+        function: getCurrentWeather,
       },
     ],
-    functionCall: "auto",
   });
 
-  const response1 = await chat.sendMessage(
-    JSON.stringify({
-      location: "Albuquerque",
-      temperature: "72",
-      unit: "fahrenheit",
-      forecast: ["sunny", "windy"],
-    }),
-    {
-      functionName: "get_current_weather",
-    }
-  );
+  await chat.sendMessage("What is the weather in Chicago?", {
+    options: {
+      functionCall: "none",
+    },
+  });
 
-  assert.equal(response1.role, "assistant");
-  assert.match(response1.content, /the current weather in Albuquerque/i);
-
-  const response2 = await chat.sendMessage(
-    "Is this too hot to have a pet polar bear?"
-  );
-
-  assert.match(response2.content, /yes/i);
-
-  // Test option overriding to force the user facing response
-  const response3 = await chat.sendMessage(
-    "What is the weather in Chicago?",
-    {
-      options: {
-        functionCall: "none",
-      }
-    }
-  );
-
-  // Expecting a variation of:
-  // Apologies, but I cannot provide real-time data.
-  // I'm sorry, but I am currently not able to provide real-time weather information.
-  assert.match(response3.content, /(sorry|cannot)/i);
-  assert.equal(response3.role, "assistant");
-  assert.equal(response3.function_call, undefined);
+  assert.equal(getCurrentWeather.mock.calls.length, 0);
 });
 
 test("overrides message options", async () => {
@@ -208,9 +197,12 @@ test("overrides message options", async () => {
 
   const response = await chat.sendMessage(
     "what is the next token in this sequence: a b c",
-    // token 34093 is "boo"
     {
-      options: { maxTokens: 1, logitBias: { "34093": 100 } }
+      options: {
+        maxTokens: 1,
+        // token 34093 is "boo"
+        logitBias: { "34093": 100 },
+      },
     }
   );
 

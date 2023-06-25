@@ -5,11 +5,14 @@ import {
 } from "./createCompletions";
 import { retry } from "./retry";
 import { omit } from "./omit";
+import { createUserFunction, type UserFunction } from "./createUserFunction";
 
 type MessageOptions = {
-  functionName?: string,
-  onUpdate?: CompletionsOptions["onUpdate"],
-  options?: Partial<Omit<Omit<CompletionsOptions, "messages">, "n">>,
+  functionName?: string;
+  onUpdate?: CompletionsOptions["onUpdate"];
+  options?: Partial<
+    Omit<Omit<Omit<CompletionsOptions, "messages">, "n">, "functions">
+  >;
 };
 
 /**
@@ -52,19 +55,28 @@ export const createChat = (
 ) => {
   const messages: Message[] = [];
 
-  const sendMessage = async (
-    prompt: string,
-    messageOptions?: MessageOptions,
-  ) => {
-    const message: Message = {
-      content: prompt,
-      role: !!messageOptions?.functionName ? "function" : "user",
-      name: messageOptions?.functionName,
-    };
+  const userFunctions: Record<string, UserFunction> = {};
 
-    messages.push(message);
+  for (const functionOptions of options.functions || []) {
+    userFunctions[functionOptions.name] = createUserFunction(functionOptions);
+  }
 
-    const result = await retry(() => {
+  const callFunction = async (functionName: string, args: string) => {
+    const userFunction = userFunctions[functionName];
+
+    if (!userFunction) {
+      throw new Error(`Function "${functionName}" not found in user functions`);
+    }
+
+    const result = await userFunction.function(
+      userFunction.parseArguments(args)
+    );
+
+    return result;
+  };
+
+  const complete = async (messageOptions?: MessageOptions) => {
+    const response = await retry(() => {
       return createCompletions({
         messages,
         onUpdate: messageOptions?.onUpdate,
@@ -73,11 +85,11 @@ export const createChat = (
       });
     });
 
-    if (!result) {
+    if (!response) {
       throw new Error("No result");
     }
 
-    const { choices } = result;
+    const { choices } = response;
 
     if (choices.length === 0) {
       throw new Error("No choices returned");
@@ -89,9 +101,38 @@ export const createChat = (
 
     const choice = choices[0];
 
+    return choice;
+  };
+
+  const sendMessage = async (
+    prompt: string,
+    messageOptions?: MessageOptions
+  ) => {
+    const message: Message = {
+      content: prompt,
+      role: "user",
+    };
+
+    messages.push(message);
+
+    const choice = await complete(messageOptions);
+
     messages.push(omit(choice, "finishReason"));
 
-    console.log(messages);
+    if (choice.function_call) {
+      const result = await callFunction(
+        choice.function_call.name,
+        choice.function_call.arguments
+      );
+
+      messages.push({
+        content: JSON.stringify(result),
+        role: "function",
+        name: choice.function_call.name,
+      });
+
+      return complete(messageOptions);
+    }
 
     return choice;
   };
@@ -100,10 +141,7 @@ export const createChat = (
     messages.push(message);
   };
 
-  const createFunction = (name: string) => {};
-
   return {
-    createFunction,
     addMessage,
     getMessages: () => messages,
     sendMessage,

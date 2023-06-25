@@ -20,6 +20,8 @@ export const retry = async <T extends () => Promise<any>>(
         throw error;
       }
 
+      console.error(error);
+
       console.warn(`retrying after error: ${error.message}`);
     }
 

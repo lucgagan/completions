@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CancelledCompletionError, UnrecoverableRemoteError } from "./errors";
+import { FunctionZodSchema } from "./createUserFunction";
 
 const RoleZodSchema = z.enum(["system", "user", "assistant", "function"]);
 
@@ -108,16 +109,7 @@ const CompletionsOptionsZodSchema = z
     maxTokens: z.number().optional(),
     user: z.string().optional(),
     functionCall: z.enum(["auto", "none"]).optional(),
-    functions: z
-      .array(
-        z.object({
-          name: z.string(),
-          description: z.string().optional(),
-          // TODO This takes a json schema, so we should validate we have a valid json schema
-          parameters: z.any().optional(),
-        })
-      )
-      .optional(),
+    functions: z.array(FunctionZodSchema).optional(),
   })
   .strict();
 

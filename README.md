@@ -116,7 +116,7 @@ const chat = createChat({
 await chat.sendMessage("continue the sequence: a b c", {
   onUpdate: (message) => {
     console.log(message);
-  }
+  },
 });
 ```
 
@@ -175,8 +175,8 @@ const response = await chat.sendMessage(
     options: {
       maxTokens: 1,
       // token 34093 is "boo"
-      logitBias: { "34093": 100 }
-    }
+      logitBias: { "34093": 100 },
+    },
   }
 );
 
@@ -211,33 +211,23 @@ const chat = createChat({
         },
         required: ["location"],
       },
+      function: async ({ location }) => {
+        return {
+          location: "Albuquerque",
+          temperature: "72",
+          unit: "fahrenheit",
+          forecast: ["sunny", "windy"],
+        };
+      },
     },
   ],
   functionCall: "auto",
 });
 
-const responseWantingFunction = await chat.sendMessage(
-  "What is the weather in Albuquerque?"
-);
+const response = await chat.sendMessage("What is the weather in Albuquerque?");
 
-if (responseWantingFunction.function_call?.name === "get_current_weather") {
-  const response = await chat.sendMessage(
-    JSON.stringify({
-      location: "Albuquerque",
-      temperature: "72",
-      unit: "fahrenheit",
-      forecast: ["sunny", "windy"],
-    }),
-    {
-      functionName: "get_current_weather"
-    }
-  );
-
-  console.log(response.content);
-  // "The weather in Albuquerque is 72 degrees fahrenheit, sunny with a light breeze."
-} else {
-  // handle responses like normal otherwise
-}
+console.log(response.content);
+// "The weather in Albuquerque is 72 degrees fahrenheit, sunny with a light breeze."
 ```
 
 ## My other projects
