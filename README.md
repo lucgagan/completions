@@ -39,6 +39,13 @@ import { createChat } from "completions";
  *    The total length of input tokens and generated tokens is limited by the model's context length.
  * @property model - ID of the model to use. See the model endpoint compatibility table for
  *    details on which models work with the Chat API.
+ * @property functionCall - Controls how the model responds to function calls.
+ *    "none" means the model does not call a function, and responds to the end-user.
+ *    "auto" means the model can pick between an end-user or calling a function.
+ *    Specifying a particular function via {"name":\ "my_function"} forces the model to call that function.
+ *    "none" is the default when no functions are present.
+ *    "auto" is the default if functions are present.
+ * @property functions - A list of functions the model may generate JSON inputs for.
  * @property n - How many chat completion choices to generate for each input message.
  * @property presencePenalty - Number between -2.0 and 2.0. Positive values penalize new
  *    tokens based on whether they appear in the text so far, increasing the model's
@@ -54,8 +61,6 @@ import { createChat } from "completions";
  *    We generally recommend altering this or temperature but not both.
  * @property user - A unique identifier representing your end-user, which can help OpenAI
  *    to monitor and detect abuse.
- * @property functionCall - Whether or not the model is allowed to call a function.
- * @property functions - Specifications for functions which the model can call.
  */
 const chat = createChat({
   apiKey: process.env.OPENAI_API_KEY,
