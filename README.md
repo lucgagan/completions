@@ -191,7 +191,7 @@ The OpenAI chat models can embed functions directly into the system prompt in a 
 To use this feature you must define a prototype and provide a description for the function when you create the chat. The model will decide when it wants to use the function. It is up to you to implement the logic around checking if the model wants to use them.
 
 ```ts
-import { createChat } from "./createChat";
+import { createChat } from "completions";
 
 const chat = createChat({
   apiKey: OPENAI_API_KEY,
