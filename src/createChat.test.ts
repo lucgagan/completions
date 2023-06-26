@@ -144,7 +144,82 @@ test("calls user defined function", async () => {
   );
 
   assert.equal(response.role, "assistant");
-  assert.match(response.content, /(the current weather in Albuquerque)|(weather in Albuquerque is currently)/i);
+  assert.match(
+    response.content,
+    /(the current weather in Albuquerque)|(weather in Albuquerque is currently)/i
+  );
+});
+
+test("calls user identified function", async () => {
+  const getCurrentWeatherV1 = mock.fn(() => {
+    return {
+      location: "Albuquerque",
+      temperature: "72",
+      unit: "fahrenheit",
+      forecast: ["sunny", "windy"],
+    };
+  });
+
+  const getCurrentWeatherV2 = mock.fn(() => {
+    return {
+      location: "Albuquerque",
+      temperature: "72",
+      unit: "fahrenheit",
+      forecast: ["sunny", "windy"],
+    };
+  });
+
+  const chat = createChat({
+    apiKey: OPENAI_API_KEY,
+    model: "gpt-3.5-turbo-0613",
+    functions: [
+      {
+        name: "get_current_weather_v1",
+        description: "Get the current weather in a given location",
+        parameters: {
+          type: "object",
+          properties: {
+            location: {
+              type: "string",
+              description: "The city and state, e.g. San Francisco, CA",
+            },
+            unit: { type: "string", enum: ["celsius", "fahrenheit"] },
+          },
+          required: ["location"],
+        },
+        function: getCurrentWeatherV1,
+      },
+      {
+        name: "get_current_weather_v2",
+        description: "Get the current weather in a given location",
+        parameters: {
+          type: "object",
+          properties: {
+            location: {
+              type: "string",
+              description: "The city and state, e.g. San Francisco, CA",
+            },
+            unit: { type: "string", enum: ["celsius", "fahrenheit"] },
+          },
+          required: ["location"],
+        },
+        function: getCurrentWeatherV2,
+      },
+    ],
+    functionCall: "auto",
+  });
+
+  const response = await chat.sendMessage(
+    "What is the weather in Albuquerque?",
+    {
+      functionCall: {
+        name: "get_current_weather_v2",
+      },
+    }
+  );
+
+  assert.equal(getCurrentWeatherV1.mock.calls.length, 0);
+  assert.equal(getCurrentWeatherV2.mock.calls.length, 1);
 });
 
 test("overrides function call", async () => {
