@@ -209,14 +209,11 @@ test("calls user identified function", async () => {
     functionCall: "auto",
   });
 
-  await chat.sendMessage(
-    "What is the weather in Albuquerque?",
-    {
-      functionCall: {
-        name: "get_current_weather_v2",
-      },
-    }
-  );
+  await chat.sendMessage("What is the weather in Albuquerque?", {
+    functionCall: {
+      name: "get_current_weather_v2",
+    },
+  });
 
   assert.equal(getCurrentWeatherV1.mock.calls.length, 0);
   assert.equal(getCurrentWeatherV2.mock.calls.length, 1);
