@@ -209,7 +209,7 @@ test("calls user identified function", async () => {
     functionCall: "auto",
   });
 
-  const response = await chat.sendMessage(
+  await chat.sendMessage(
     "What is the weather in Albuquerque?",
     {
       functionCall: {
