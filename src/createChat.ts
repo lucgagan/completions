@@ -165,10 +165,13 @@ export const createChat = (
     } as any;
   };
 
-  const sendMessage = async <T extends MessageOptions>(
-    prompt: string,
-    messageOptions?: T
-  ): Promise<"expect" extends keyof T ? StructuredChoice : Choice> => {
+  type SendMessageReturn<T> = T extends undefined ? Choice : StructuredChoice;
+
+
+  function sendMessage<T extends MessageOptions>(prompt: string, messageOptions: T): Promise<SendMessageReturn<T>>;
+  function sendMessage(prompt: string): Promise<SendMessageReturn<undefined>>;
+
+  async function sendMessage(prompt: string, messageOptions?: MessageOptions) {
     const message: Message = {
       content: messageOptions?.expect
         ? extendPrompt(prompt, messageOptions.expect)
@@ -204,7 +207,7 @@ export const createChat = (
     } else {
       return choice as any;
     }
-  };
+  }
 
   const addMessage = (message: Message) => {
     messages.push(message);
