@@ -303,6 +303,6 @@ test.only("returns structured data", async () => {
     },
   });
 
-  assert('name' in response.content);
-  assert('domain' in response.content);
+  assert("name" in response.content);
+  assert("domain" in response.content);
 });

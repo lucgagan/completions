@@ -29,12 +29,12 @@ type Expectation = {
 };
 
 type MessageOptions = Partial<
-  Omit<Omit<Omit<CompletionsOptions, "messages">, "n">, "functions">
+  Omit<CompletionsOptions, "messages" | "n" | "functions">
 > & {
-  expect?: Expectation
+  expect?: Expectation;
 };
 
-type StructuredChoice = Omit<Choice, 'content'> & {
+type StructuredChoice = Omit<Choice, "content"> & {
   content: JsonObject;
 };
 
@@ -47,7 +47,9 @@ ${JSON.stringify(expect.schema, null, 2)}
 
 Examples:
 
-${expect.examples.map((example) => JSON.stringify(example, null, 2)).join("\n\n")}`
+${expect.examples
+  .map((example) => JSON.stringify(example, null, 2))
+  .join("\n\n")}`;
 };
 
 /**
@@ -86,7 +88,7 @@ ${expect.examples.map((example) => JSON.stringify(example, null, 2)).join("\n\n"
  *    to monitor and detect abuse.
  */
 export const createChat = (
-  options: Omit<Omit<Omit<CompletionsOptions, "messages">, "n">, "onUpdate">
+  options: Omit<CompletionsOptions, "messages" | "n" | "onUpdate">
 ) => {
   const messages: Message[] = [];
 
@@ -110,7 +112,9 @@ export const createChat = (
     return result;
   };
 
-  const complete = async <T extends JsonObject>(messageOptions?: MessageOptions) => {
+  const complete = async <T extends JsonObject>(
+    messageOptions?: MessageOptions
+  ) => {
     const response = await retry(() => {
       return createCompletions({
         messages,
@@ -149,14 +153,16 @@ export const createChat = (
       ...choice,
       structuredContent: parsed,
     } as any;
-  }
+  };
 
   const sendMessage = async <T extends MessageOptions>(
     prompt: string,
     messageOptions?: T
-  ): Promise<'expect' extends keyof T ? StructuredChoice : Choice> => {
+  ): Promise<"expect" extends keyof T ? StructuredChoice : Choice> => {
     const message: Message = {
-      content: messageOptions?.expect ? extendPrompt(prompt, messageOptions.expect) : prompt,
+      content: messageOptions?.expect
+        ? extendPrompt(prompt, messageOptions.expect)
+        : prompt,
       role: "user",
     };
 

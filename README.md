@@ -267,12 +267,12 @@ Suggest a random startup name
 Respond ONLY with a JSON object that satisfies the following schema:
 
 {
-  type: "object",
-  properties: {
-    name: { type: "string" },
-    domain: { type: "string" },
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "domain": { "type": "string" },
   },
-  required: ["name", "domain"],
+  "required": ["name", "domain"],
 }
 
 Examples:
