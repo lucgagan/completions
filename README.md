@@ -248,6 +248,7 @@ const response = await chat.sendMessage("Suggest a random startup name", {
     ],
     // This is the schema that the response should satisfy.
     schema: {
+      additionalProperties: false,
       type: "object",
       properties: {
         name: { type: "string" },

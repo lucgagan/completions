@@ -293,13 +293,14 @@ test("returns structured data", async () => {
         },
       ],
       schema: {
+        additionalProperties: false,
         type: "object",
         properties: {
           name: { type: "string" },
           domain: { type: "string" },
         },
         required: ["name", "domain"],
-      },
+      } as const,
     },
   });
 
