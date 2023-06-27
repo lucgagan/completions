@@ -7,35 +7,24 @@ import {
 import { retry } from "./retry";
 import { omit } from "./omit";
 import { createUserFunction, type UserFunction } from "./createUserFunction";
-import Ajv, { AnySchemaObject } from "ajv";
-import { type FromSchema } from "json-schema-to-ts";
+import Ajv from "ajv";
+import { type JSONSchema, type FromSchema } from "json-schema-to-ts";
 
-type JsonValue =
-  | JsonObject
-  | JsonValue[]
-  | boolean
-  | number
-  | string
-  | readonly JsonValue[]
-  | null
-  | undefined;
-
-export type JsonObject = {
-  [k: string]: JsonValue;
+export type ShallowJsonObject = {
+  [k: string]: string;
 };
 
 type Expectation = {
-  examples: JsonObject[];
-  schema: AnySchemaObject;
+  examples: ShallowJsonObject[];
+  schema: JSONSchema;
 };
 
-type MessageOptions = Partial<
-  Omit<CompletionsOptions, "messages" | "n" | "functions">
-> & {
-  expect?: Expectation;
-};
+type MessageOptions =
+  | Partial<Omit<CompletionsOptions, "messages" | "n" | "functions">> & {
+      expect?: Expectation;
+    };
 
-type StructuredChoice<T extends JsonObject> = Omit<Choice, "content"> & {
+type StructuredChoice<T> = Omit<Choice, "content"> & {
   content: T;
 };
 
@@ -113,9 +102,7 @@ export const createChat = (
     return result;
   };
 
-  const complete = async <T extends JsonObject>(
-    messageOptions?: MessageOptions
-  ) => {
+  const complete = async (messageOptions?: MessageOptions) => {
     const response = await retry(() => {
       return createCompletions({
         messages,
@@ -163,9 +150,12 @@ export const createChat = (
     } as any;
   };
 
-  type SendMessageReturn<T> = T extends undefined
-    ? Choice
-    : StructuredChoice<FromSchema<T["expect"]["schema"]>>;
+  type SendMessageReturn<T extends MessageOptions | undefined> =
+    "expect" extends keyof T
+      ? T["expect"] extends Expectation
+        ? StructuredChoice<FromSchema<T["expect"]["schema"]>>
+        : Choice
+      : Choice;
 
   function sendMessage<T extends MessageOptions>(
     prompt: string,
