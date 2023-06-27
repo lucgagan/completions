@@ -156,9 +156,7 @@ export const createChat = (
     const valid = validate(parsed);
 
     if (!valid) {
-      throw new Error(
-        `Invalid response: ${JSON.stringify(validate.errors)}`
-      );
+      throw new Error(`Invalid response: ${JSON.stringify(validate.errors)}`);
     }
 
     return {

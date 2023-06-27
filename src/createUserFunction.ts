@@ -1,11 +1,10 @@
 import { z } from "zod";
-import Ajv from "ajv";
+import Ajv, { AnySchemaObject } from "ajv";
 
 export const FunctionZodSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
-  // TODO This takes a json schema, so we should validate we have a valid json schema
-  parameters: z.any(),
+  parameters: z.custom<AnySchemaObject>(),
   function: z.function(),
 });
 
