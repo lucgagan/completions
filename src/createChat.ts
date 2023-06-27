@@ -8,6 +8,7 @@ import { retry } from "./retry";
 import { omit } from "./omit";
 import { createUserFunction, type UserFunction } from "./createUserFunction";
 import Ajv, { AnySchemaObject } from "ajv";
+import { type FromSchema } from "json-schema-to-ts";
 
 type JsonValue =
   | JsonObject
@@ -164,7 +165,7 @@ export const createChat = (
 
   type SendMessageReturn<T> = T extends undefined
     ? Choice
-    : StructuredChoice<JsonObject>;
+    : StructuredChoice<FromSchema<T["expect"]["schema"]>>;
 
   function sendMessage<T extends MessageOptions>(
     prompt: string,
