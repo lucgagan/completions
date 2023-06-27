@@ -2,7 +2,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     environment: release
-    name: Release
+    name: Test
     steps:
       - name: setup repository
         uses: actions/checkout@v3
