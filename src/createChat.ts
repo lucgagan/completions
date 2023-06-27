@@ -8,8 +8,7 @@ import { retry } from "./retry";
 import { omit } from "./omit";
 import { createUserFunction, type UserFunction } from "./createUserFunction";
 import Ajv, { AnySchemaObject } from "ajv";
-import {type FromSchema} from "json-schema-to-ts";
-
+import { type FromSchema } from "json-schema-to-ts";
 
 type JsonValue =
   | JsonObject
@@ -145,10 +144,7 @@ export const createChat = (
     return choice;
   };
 
-  const parseResponse = (
-    choice: Choice,
-    expect: Expectation
-  ) => {
+  const parseResponse = (choice: Choice, expect: Expectation) => {
     const parsed = JSON.parse(choice.content);
 
     const ajv = new Ajv();
@@ -168,9 +164,14 @@ export const createChat = (
   };
 
   // @ts-expect-error TODO
-  type SendMessageReturn<T> = T extends undefined ? Choice : StructuredChoice<FromSchema<T['expect']['schema']>>;
+  type SendMessageReturn<T> = T extends undefined
+    ? Choice
+    : StructuredChoice<FromSchema<T["expect"]["schema"]>>;
 
-  function sendMessage<T extends MessageOptions>(prompt: string, messageOptions: T): Promise<SendMessageReturn<T>>;
+  function sendMessage<T extends MessageOptions>(
+    prompt: string,
+    messageOptions: T
+  ): Promise<SendMessageReturn<T>>;
   function sendMessage(prompt: string): Promise<SendMessageReturn<undefined>>;
 
   async function sendMessage(prompt: string, messageOptions?: MessageOptions) {
