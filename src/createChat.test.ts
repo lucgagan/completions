@@ -277,3 +277,32 @@ test("overrides message options", async () => {
   assert.equal(response.finishReason, "length");
   assert.equal(response.content, "boo");
 });
+
+test.only("returns structured data", async () => {
+  const chat = createChat({
+    apiKey: OPENAI_API_KEY,
+    model: "gpt-3.5-turbo",
+  });
+
+  const response = await chat.sendMessage("Suggest a random startup name", {
+    expect: {
+      examples: [
+        {
+          name: "OpenAI",
+          domain: "openai.com",
+        },
+      ],
+      schema: {
+        type: "object",
+        properties: {
+          name: { type: "string" },
+          domain: { type: "string" },
+        },
+        required: ["name", "domain"],
+      },
+    },
+  });
+
+  assert('name' in response.content);
+  assert('domain' in response.content);
+});

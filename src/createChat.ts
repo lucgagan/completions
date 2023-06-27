@@ -2,14 +2,53 @@ import {
   type CompletionsOptions,
   type Message,
   createCompletions,
+  Choice,
 } from "./createCompletions";
 import { retry } from "./retry";
 import { omit } from "./omit";
 import { createUserFunction, type UserFunction } from "./createUserFunction";
 
+type JsonValue =
+  | JsonObject
+  | JsonValue[]
+  | boolean
+  | number
+  | string
+  | readonly JsonValue[]
+  | null
+  | undefined;
+
+export type JsonObject = {
+  [k: string]: JsonValue;
+};
+
+type Expectation = {
+  examples: JsonObject[];
+  // TODO is there a better way to represent this?
+  schema: JsonObject;
+};
+
 type MessageOptions = Partial<
   Omit<Omit<Omit<CompletionsOptions, "messages">, "n">, "functions">
->;
+> & {
+  expect?: Expectation
+};
+
+type StructuredChoice = Omit<Choice, 'content'> & {
+  content: JsonObject;
+};
+
+const extendPrompt = (prompt: string, expect: Expectation) => {
+  return `${prompt}
+
+Respond ONLY with a JSON object that satisfies the following schema:
+
+${JSON.stringify(expect.schema, null, 2)}
+
+Examples:
+
+${expect.examples.map((example) => JSON.stringify(example, null, 2)).join("\n\n")}`
+};
 
 /**
  * @property apiKey - OpenAI API key.
@@ -71,7 +110,7 @@ export const createChat = (
     return result;
   };
 
-  const complete = async (messageOptions?: MessageOptions) => {
+  const complete = async <T extends JsonObject>(messageOptions?: MessageOptions) => {
     const response = await retry(() => {
       return createCompletions({
         messages,
@@ -100,18 +139,30 @@ export const createChat = (
     return choice;
   };
 
-  const sendMessage = async (
+  const parseResponse = (
+    choice: Choice,
+    expect: JsonObject
+  ): StructuredChoice => {
+    const parsed = JSON.parse(choice.content);
+
+    return {
+      ...choice,
+      structuredContent: parsed,
+    } as any;
+  }
+
+  const sendMessage = async <T extends MessageOptions>(
     prompt: string,
-    messageOptions?: MessageOptions
-  ) => {
+    messageOptions?: T
+  ): Promise<'expect' extends keyof T ? StructuredChoice : Choice> => {
     const message: Message = {
-      content: prompt,
+      content: messageOptions?.expect ? extendPrompt(prompt, messageOptions.expect) : prompt,
       role: "user",
     };
 
     messages.push(message);
 
-    const choice = await complete(messageOptions);
+    let choice = await complete(messageOptions);
 
     messages.push(omit(choice, "finishReason"));
 
@@ -127,10 +178,16 @@ export const createChat = (
         name: choice.function_call.name,
       });
 
-      return complete(messageOptions);
+      choice = await complete(messageOptions);
     }
 
-    return choice;
+    // TypeScript can't properly narrow the type in the function body.
+    // This is why we have to use `as any` here.
+    if (messageOptions?.expect) {
+      return parseResponse(choice, messageOptions.expect) as any;
+    } else {
+      return choice as any;
+    }
   };
 
   const addMessage = (message: Message) => {

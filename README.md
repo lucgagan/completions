@@ -230,6 +230,69 @@ console.log(response.content);
 // "The weather in Albuquerque is 72 degrees fahrenheit, sunny with a light breeze."
 ```
 
+### Getting structured response
+
+If you require a structured response, you can provide the response schema.
+
+```ts
+import { createChat } from "completions";
+
+const response = await chat.sendMessage("Suggest a random startup name", {
+  expect: {
+    // These are the examples of what the response should look like.
+    examples: [
+      {
+        name: "OpenAI",
+        domain: "openai.com",
+      },
+    ],
+    // This is the schema that the response should satisfy.
+    schema: {
+      type: "object",
+      properties: {
+        name: { type: "string" },
+        domain: { type: "string" },
+      },
+      required: ["name", "domain"],
+    },
+  },
+});
+```
+
+Behind the scenes, the SDK will use the `expect` parameter to generate a prompt that will be sent to the API. The prompt will look like this:
+
+```markdown
+Suggest a random startup name
+
+Respond ONLY with a JSON object that satisfies the following schema:
+
+{
+  type: "object",
+  properties: {
+    name: { type: "string" },
+    domain: { type: "string" },
+  },
+  required: ["name", "domain"],
+}
+
+Examples:
+
+{
+  "name": "OpenAI",
+  "domain": "openai.com"
+}
+```
+
+The SDK will parse the response and validate it against the schema. If the response is invalid, it will throw an error. If the response is valid, it will return the response.
+
+```ts
+response.content;
+// {
+//   name: "Dex",
+//   domain: "dex.com",
+// }
+```
+
 ## My other projects
 
 - [Developer Utilities](https://ray.run/tools)
