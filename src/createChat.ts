@@ -104,20 +104,6 @@ export const createChat = (
     userFunctions[functionOptions.name] = createUserFunction(functionOptions);
   }
 
-  const callFunction = async (functionName: string, args: string) => {
-    const userFunction = userFunctions[functionName];
-
-    if (!userFunction) {
-      throw new Error(`Function "${functionName}" not found in user functions`);
-    }
-
-    const result = await userFunction.function(
-      userFunction.parseArguments(args)
-    );
-
-    return result;
-  };
-
   const complete = async (messageOptions?: MessageOptions) => {
     const response = await retry(() => {
       return createCompletions({
@@ -194,9 +180,18 @@ export const createChat = (
     messages.push(omit(choice, "finishReason"));
 
     if (choice.function_call) {
-      const result = await callFunction(
-        choice.function_call.name,
-        choice.function_call.arguments
+      const functionName = choice.function_call.name;
+
+      const userFunction = userFunctions[functionName];
+
+      if (!userFunction) {
+        throw new Error(`Function "${functionName}" not found in user functions`);
+      }
+
+      const functionArgs = userFunction.parseArguments(choice.function_call.arguments);
+
+      const result = await userFunction.function(
+        userFunction.parseArguments(functionArgs)
       );
 
       messages.push({
