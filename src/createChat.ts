@@ -110,7 +110,7 @@ export const createChat = (
         messages,
         onUpdate: messageOptions?.onUpdate,
         ...options,
-        ...messageOptions,
+        ...messageOptions ? omit(messageOptions, "expect") : {},
       });
     });
 
@@ -191,7 +191,7 @@ export const createChat = (
       const functionArgs = userFunction.parseArguments(choice.function_call.arguments);
 
       const result = await userFunction.function(
-        userFunction.parseArguments(functionArgs)
+        functionArgs,
       );
 
       messages.push({
