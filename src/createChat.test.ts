@@ -278,7 +278,7 @@ test("overrides message options", async () => {
   assert.equal(response.content, "boo");
 });
 
-test.only("returns structured data", async () => {
+test("returns structured data", async () => {
   const chat = createChat({
     apiKey: OPENAI_API_KEY,
     model: "gpt-3.5-turbo",
@@ -303,6 +303,7 @@ test.only("returns structured data", async () => {
     },
   });
 
+  assert(typeof response.content === "object");
   assert("name" in response.content);
   assert("domain" in response.content);
 });

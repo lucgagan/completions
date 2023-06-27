@@ -7,6 +7,7 @@ import {
 import { retry } from "./retry";
 import { omit } from "./omit";
 import { createUserFunction, type UserFunction } from "./createUserFunction";
+import Ajv, { AnySchemaObject } from "ajv";
 
 type JsonValue =
   | JsonObject
@@ -24,8 +25,7 @@ export type JsonObject = {
 
 type Expectation = {
   examples: JsonObject[];
-  // TODO is there a better way to represent this?
-  schema: JsonObject;
+  schema: AnySchemaObject;
 };
 
 type MessageOptions = Partial<
@@ -145,13 +145,25 @@ export const createChat = (
 
   const parseResponse = (
     choice: Choice,
-    expect: JsonObject
+    expect: AnySchemaObject
   ): StructuredChoice => {
     const parsed = JSON.parse(choice.content);
 
+    const ajv = new Ajv();
+
+    const validate = ajv.compile(expect.schema);
+
+    const valid = validate(parsed);
+
+    if (!valid) {
+      throw new Error(
+        `Invalid response: ${JSON.stringify(validate.errors)}`
+      );
+    }
+
     return {
       ...choice,
-      structuredContent: parsed,
+      content: parsed,
     } as any;
   };
 
