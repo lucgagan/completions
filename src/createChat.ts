@@ -46,20 +46,16 @@ interface SendMessage {
   <T extends MessageOptions>(
     prompt: string,
     messageOptions: T
-  // @ts-expect-error TODO
+    // @ts-expect-error TODO
   ): Promise<StructuredChoice<FromSchema<T["expect"]["schema"]>>>;
-  
-  (
-    prompt: string,
-    messageOptions?: MessageOptions
-  ): Promise<Choice>;
+
+  (prompt: string, messageOptions?: MessageOptions): Promise<Choice>;
 }
 
 export type Chat = {
   addMessage: (message: Message) => void;
   getMessages: () => Message[];
   sendMessage: SendMessage;
-
 };
 
 /**
