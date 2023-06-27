@@ -42,6 +42,26 @@ ${expect.examples
   .join("\n\n")}`;
 };
 
+interface SendMessage {
+  <T extends MessageOptions>(
+    prompt: string,
+    messageOptions: T
+  // @ts-expect-error TODO
+  ): Promise<StructuredChoice<FromSchema<T["expect"]["schema"]>>>;
+  
+  (
+    prompt: string,
+    messageOptions?: MessageOptions
+  ): Promise<Choice>;
+}
+
+export type Chat = {
+  addMessage: (message: Message) => void;
+  getMessages: () => Message[];
+  sendMessage: SendMessage;
+
+};
+
 /**
  * @property apiKey - OpenAI API key.
  * @property frequencyPenalty - Number between -2.0 and 2.0. Positive values penalize new
@@ -79,7 +99,7 @@ ${expect.examples
  */
 export const createChat = (
   options: Omit<CompletionsOptions, "messages" | "n" | "onUpdate">
-) => {
+): Chat => {
   const messages: Message[] = [];
 
   const userFunctions: Record<string, UserFunction> = {};
@@ -211,5 +231,3 @@ export const createChat = (
     sendMessage,
   };
 };
-
-export type Chat = ReturnType<typeof createChat>;
