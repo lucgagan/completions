@@ -8,7 +8,12 @@ export const FunctionZodSchema = z.object({
   function: z.function(),
 });
 
-export type UserFunctionOptions = z.infer<typeof FunctionZodSchema>;
+export type UserFunctionOptions = {
+  name: string;
+  description?: string;
+  parameters: AnySchemaObject;
+  function: (...args: any[]) => any;
+};
 
 export type UserFunction = ReturnType<typeof createUserFunction>;
 

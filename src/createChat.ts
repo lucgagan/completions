@@ -21,7 +21,7 @@ type JsonValue =
   | undefined;
 
 export type JsonObject = {
-  [k: string]: JsonValue;
+  [k: string]: string;
 };
 
 type Expectation = {
@@ -163,7 +163,6 @@ export const createChat = (
     } as any;
   };
 
-  // @ts-expect-error TODO
   type SendMessageReturn<T> = T extends undefined
     ? Choice
     : StructuredChoice<FromSchema<T["expect"]["schema"]>>;

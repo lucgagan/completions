@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { CancelledCompletionError, UnrecoverableRemoteError } from "./errors";
-import { FunctionZodSchema } from "./createUserFunction";
+import { FunctionZodSchema, UserFunctionOptions } from "./createUserFunction";
 
 const RoleZodSchema = z.enum(["system", "user", "assistant", "function"]);
 
-type Role = z.infer<typeof RoleZodSchema>;
+type Role = "system" | "user" | "assistant" | "function";
 
 const MessageZodSchema = z
   .object({
@@ -20,7 +20,15 @@ const MessageZodSchema = z
   })
   .strict();
 
-export type Message = z.infer<typeof MessageZodSchema>;
+export type Message = {
+  content: string;
+  role: Role;
+  name?: string;
+  function_call?: {
+    name: string;
+    arguments: string;
+  };
+};
 
 const ResponseChunkZodSchema = z
   .object({
@@ -54,6 +62,33 @@ const ResponseChunkZodSchema = z
   })
   .strict();
 
+type ResponseChunk = {
+  id: string;
+  object: "chat.completion.chunk";
+  created: number;
+  model: string;
+  choices: {
+    index: number;
+    finish_reason: string | null;
+    delta:
+      | {
+          content: null;
+          role?: Role;
+          function_call?: {
+            name?: string;
+            arguments?: string;
+          };
+        }
+      | {
+          content: string;
+        }
+      | {
+          role: Role;
+        }
+      | {};
+  }[];
+};
+
 const CompletionsOptionsZodSchema = z
   .object({
     apiUrl: z.string().optional(),
@@ -86,7 +121,24 @@ const CompletionsOptionsZodSchema = z
   })
   .strict();
 
-export type CompletionsOptions = z.infer<typeof CompletionsOptionsZodSchema>;
+export type CompletionsOptions = {
+  apiUrl?: string;
+  onUpdate?: (options: { cancel: () => void; message: ResponseChunk }) => void;
+  apiKey: string;
+  model: string;
+  messages: Message[];
+  temperature?: number;
+  topP?: number;
+  n?: number;
+  stop?: string | string[];
+  frequencyPenalty?: number;
+  presencePenalty?: number;
+  logitBias?: Record<string, number>;
+  maxTokens?: number;
+  user?: string;
+  functionCall?: "auto" | "none" | { name: string };
+  functions?: UserFunctionOptions[];
+};
 
 const ChoiceZodSchema = z
   .object({
@@ -102,17 +154,25 @@ const ChoiceZodSchema = z
   })
   .strict();
 
-export type Choice = z.infer<typeof ChoiceZodSchema>;
+export type Choice = {
+  role: Role;
+  content: string;
+  finishReason: string;
+  function_call?: {
+    name: string;
+    arguments: string;
+  };
+};
 
-const CompletionResponseZodSchema = z.object({
-  choices: z.array(ChoiceZodSchema),
-});
-
-export type CompletionResponse = z.infer<typeof CompletionResponseZodSchema>;
+export type CompletionResponse = {
+  choices: Choice[];
+};
 
 export const createCompletions = async (
   options: CompletionsOptions
 ): Promise<CompletionResponse> => {
+  CompletionsOptionsZodSchema.parse(options);
+
   const response = await fetch(
     options.apiUrl ?? "https://api.openai.com/v1/chat/completions",
     {
