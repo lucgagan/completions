@@ -307,4 +307,6 @@ test("returns structured data", async () => {
   assert(typeof response.content === "object");
   assert("name" in response.content);
   assert("domain" in response.content);
+
+  // force next version release
 });
