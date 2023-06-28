@@ -110,7 +110,7 @@ export const createChat = (
         messages,
         onUpdate: messageOptions?.onUpdate,
         ...options,
-        ...messageOptions ? omit(messageOptions, "expect") : {},
+        ...(messageOptions ? omit(messageOptions, "expect") : {}),
       });
     });
 
@@ -185,14 +185,16 @@ export const createChat = (
       const userFunction = userFunctions[functionName];
 
       if (!userFunction) {
-        throw new Error(`Function "${functionName}" not found in user functions`);
+        throw new Error(
+          `Function "${functionName}" not found in user functions`
+        );
       }
 
-      const functionArgs = userFunction.parseArguments(choice.function_call.arguments);
-
-      const result = await userFunction.function(
-        functionArgs,
+      const functionArgs = userFunction.parseArguments(
+        choice.function_call.arguments
       );
+
+      const result = await userFunction.function(functionArgs);
 
       messages.push({
         content: JSON.stringify(result),
