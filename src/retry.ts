@@ -16,7 +16,7 @@ export const retry = async <T extends () => Promise<any>>(
         throw error;
       }
 
-      if (retries === 0) {
+      if (retries === attempts) {
         throw error;
       }
 
