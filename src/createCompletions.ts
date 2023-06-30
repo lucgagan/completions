@@ -181,7 +181,6 @@ export const createCompletions = async (
   if (options.unresponsiveApiTimeout !== undefined) {
     abortController = new AbortController();
     timeoutId = setTimeout(() => {
-      console.log("aborting due to unresponsive api");
       abortController?.abort();
     }, options.unresponsiveApiTimeout);
   }
