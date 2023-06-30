@@ -179,7 +179,7 @@ export const createChat = (
 
     messages.push(omit(choice, "finishReason"));
 
-    if (choice.function_call) {
+    while (choice.function_call) {
       const functionName = choice.function_call.name;
 
       const userFunction = userFunctions[functionName];
@@ -203,6 +203,8 @@ export const createChat = (
       });
 
       choice = await complete(messageOptions);
+
+      messages.push(omit(choice, "finishReason"));
     }
 
     // TypeScript can't properly narrow the type in the function body.
