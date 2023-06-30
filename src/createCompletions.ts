@@ -118,6 +118,7 @@ const CompletionsOptionsZodSchema = z
       .union([z.enum(["auto", "none"]), z.object({ name: z.string() })])
       .optional(),
     functions: z.array(FunctionZodSchema).optional(),
+    unresponsiveApiTimeout: z.number().optional(),
   })
   .strict();
 
@@ -138,6 +139,7 @@ export type CompletionsOptions = {
   user?: string;
   functionCall?: "auto" | "none" | { name: string };
   functions?: UserFunctionOptions[];
+  unresponsiveApiTimeout?: number;
 };
 
 const ChoiceZodSchema = z
@@ -173,6 +175,17 @@ export const createCompletions = async (
 ): Promise<CompletionResponse> => {
   CompletionsOptionsZodSchema.parse(options);
 
+  let abortController: AbortController | undefined;
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  if (options.unresponsiveApiTimeout !== undefined) {
+    abortController = new AbortController();
+    timeoutId = setTimeout(() => {
+      console.log("aborting due to unresponsive api");
+      abortController?.abort();
+    }, options.unresponsiveApiTimeout);
+  }
+
   const response = await fetch(
     options.apiUrl ?? "https://api.openai.com/v1/chat/completions",
     {
@@ -197,6 +210,7 @@ export const createCompletions = async (
         functions: options.functions,
       }),
       method: "POST",
+      signal: abortController?.signal,
     }
   );
 
@@ -212,6 +226,11 @@ export const createCompletions = async (
 
   while (true) {
     const { value, done } = await reader.read();
+
+    // The api responded so we can cancel the timeout
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+    }
 
     if (done) {
       break;
