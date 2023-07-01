@@ -229,6 +229,9 @@ export const createCompletions = async (
     // The api responded so we can cancel the timeout
     if (timeoutId !== undefined) {
       clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        abortController?.abort();
+      }, options.unresponsiveApiTimeout);
     }
 
     if (done) {
@@ -318,6 +321,11 @@ export const createCompletions = async (
         }
       }
     }
+  }
+
+  if (timeoutId !== undefined) {
+    clearTimeout(timeoutId);
+    timeoutId = undefined;
   }
 
   if (cancelled) {
