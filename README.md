@@ -147,6 +147,30 @@ try {
 }
 ```
 
+Alternatively the `Chat` instance has a method `cancelStream` which which allows equivalent functionality to the above without having to use the `cancel` property of the `onUpdate` callback. (This is useful if you want to have a way to cancel the stream from something removed for the details of handling the streams.)
+
+```ts
+import { createChat, CancelledCompletionError } from "completions";
+
+const chat = createChat({
+  apiKey: OPENAI_API_KEY,
+  model: "gpt-3.5-turbo",
+});
+
+try {
+  const responsePromise = chat.sendMessage("continue sequence: a b c");
+  // in practice this would be linked to something external
+  chat.cancelStream();
+  await responsePromise;
+} catch (error) {
+  if (error instanceof CancelledCompletion) {
+    console.log("cancelled");
+  }
+
+  throw error;
+}
+```
+
 ### Overriding API
 
 If you want to use `completions` library against another API endpoint that is compatible with the official API, you can do so by passing `apiUrl` parameter:
