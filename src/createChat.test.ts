@@ -103,6 +103,14 @@ test("cancel response", async () => {
       },
     })
   );
+
+  const chatPromise = chat.sendMessage("continue sequence: a b c");
+  chat.cancelStream();
+  await assert.rejects(chatPromise);
+
+  // make sure that the chat still functions after cancelling
+  const response = await chat.sendMessage("continue sequence: a b c");
+  assert(response.content);
 });
 
 test("calls user defined function", async () => {

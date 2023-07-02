@@ -56,6 +56,7 @@ export type Chat = {
   addMessage: (message: Message) => void;
   getMessages: () => Message[];
   sendMessage: SendMessage;
+  cancelStream: () => void;
 };
 
 /**
@@ -97,6 +98,7 @@ export const createChat = (
   options: Omit<CompletionsOptions, "messages" | "n" | "onUpdate">
 ): Chat => {
   const messages: Message[] = [];
+  const cancel = { cancelled: false };
 
   const userFunctions: Record<string, UserFunction> = {};
 
@@ -106,12 +108,15 @@ export const createChat = (
 
   const complete = async (messageOptions?: MessageOptions) => {
     const response = await retry(() => {
-      return createCompletions({
-        messages,
-        onUpdate: messageOptions?.onUpdate,
-        ...options,
-        ...(messageOptions ? omit(messageOptions, "expect") : {}),
-      });
+      return createCompletions(
+        {
+          messages,
+          onUpdate: messageOptions?.onUpdate,
+          ...options,
+          ...(messageOptions ? omit(messageOptions, "expect") : {}),
+        },
+        cancel
+      );
     });
 
     if (!response) {
@@ -173,6 +178,8 @@ export const createChat = (
       role: "user",
     };
 
+    cancel.cancelled = false;
+
     messages.push(message);
 
     let choice = await complete(messageOptions);
@@ -218,9 +225,14 @@ export const createChat = (
     messages.push(message);
   };
 
+  const cancelStream = () => {
+    cancel.cancelled = true;
+  };
+
   return {
     addMessage,
     getMessages: () => messages,
     sendMessage,
+    cancelStream,
   };
 };
