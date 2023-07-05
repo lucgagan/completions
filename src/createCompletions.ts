@@ -169,7 +169,7 @@ export type Choice = {
   };
   functionCall?: {
     name: string;
-    arguments: {};
+    arguments: Record<string, any>;
   };
 };
 
