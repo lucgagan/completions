@@ -148,6 +148,11 @@ test("calls user defined function", async () => {
     response.content,
     /(the current weather in Albuquerque)|(weather in Albuquerque is currently)/i
   );
+
+  assert.deepEqual(response.functionCall, {
+    name: "get_current_weather",
+    arguments: { location: "Albuquerque" },
+  });
 });
 
 test("calls user identified function", async () => {

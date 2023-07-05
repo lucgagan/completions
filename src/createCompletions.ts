@@ -162,6 +162,10 @@ export type Choice = {
     name: string;
     arguments: string;
   };
+  functionCall?: {
+    name: string;
+    arguments: {};
+  };
 };
 
 export type CompletionResponse = {

@@ -203,6 +203,11 @@ export const createChat = (
       });
 
       choice = await complete(messageOptions);
+
+      choice.functionCall = {
+        name: functionName,
+        arguments: functionArgs,
+      };
     }
 
     // TypeScript can't properly narrow the type in the function body.
