@@ -121,9 +121,14 @@ const CompletionsOptionsZodSchema = z
   })
   .strict();
 
+type OnUpdate = (options: {
+  cancel: () => void;
+  message: ResponseChunk;
+}) => void;
+
 export type CompletionsOptions = {
   apiUrl?: string;
-  onUpdate?: (options: { cancel: () => void; message: ResponseChunk }) => void;
+  onUpdate?: OnUpdate;
   apiKey: string;
   model: string;
   messages: Message[];
@@ -172,43 +177,8 @@ export type CompletionResponse = {
   choices: Choice[];
 };
 
-export const createCompletions = async (
-  options: CompletionsOptions
-): Promise<CompletionResponse> => {
-  CompletionsOptionsZodSchema.parse(options);
-
-  const response = await fetch(
-    options.apiUrl ?? "https://api.openai.com/v1/chat/completions",
-    {
-      headers: {
-        Authorization: `Bearer ${options.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        messages: options.messages,
-        model: options.model,
-        stream: true,
-        temperature: options.temperature,
-        top_p: options.topP,
-        n: options.n,
-        stop: options.stop,
-        frequency_penalty: options.frequencyPenalty,
-        presence_penalty: options.presencePenalty,
-        logit_bias: options.logitBias,
-        max_tokens: options.maxTokens,
-        user: options.user,
-        function_call: options.functionCall,
-        functions: options.functions,
-      }),
-      method: "POST",
-    }
-  );
-
-  if (!response.body) {
-    throw new Error("Expected response to have a body");
-  }
-
-  const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+const consumeStream = async (stream: ReadableStream, onUpdate: OnUpdate) => {
+  const reader = stream.pipeThrough(new TextDecoderStream()).getReader();
 
   const choices: Choice[] = [];
 
@@ -273,7 +243,7 @@ export const createCompletions = async (
         throw error;
       }
 
-      options.onUpdate?.({
+      onUpdate({
         cancel: () => {
           cancelled = true;
 
@@ -320,6 +290,69 @@ export const createCompletions = async (
   if (cancelled) {
     throw new CancelledCompletionError(choices);
   }
+
+  return choices;
+};
+
+const parseResponse = (response: any) => {
+  return response.choices.map((choice: any) => {
+    const parsedChoice: Choice = {
+      role: choice.message.role,
+      // I've seen content to be null in case of a function call
+      content: choice.message.content ?? '',
+      finishReason: choice.finish_reason,
+    };
+
+    if (choice.message.function_call) {
+      parsedChoice.function_call = {
+        name: choice.message.function_call.name,
+        arguments: choice.message.function_call.arguments,
+      };
+    }
+
+    return parsedChoice;
+  });
+};
+
+export const createCompletions = async (
+  options: CompletionsOptions
+): Promise<CompletionResponse> => {
+  CompletionsOptionsZodSchema.parse(options);
+
+  const response = await fetch(
+    options.apiUrl ?? "https://api.openai.com/v1/chat/completions",
+    {
+      headers: {
+        Authorization: `Bearer ${options.apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messages: options.messages,
+        model: options.model,
+        stream: Boolean(options.onUpdate),
+        temperature: options.temperature,
+        top_p: options.topP,
+        n: options.n,
+        stop: options.stop,
+        frequency_penalty: options.frequencyPenalty,
+        presence_penalty: options.presencePenalty,
+        logit_bias: options.logitBias,
+        max_tokens: options.maxTokens,
+        user: options.user,
+        function_call: options.functionCall,
+        functions: options.functions,
+      }),
+      method: "POST",
+    }
+  );
+
+  if (!response.body) {
+    throw new Error("Expected response to have a body");
+  }
+
+  const choices = options.onUpdate
+    ? await consumeStream(response.body, options.onUpdate)
+    : parseResponse(await response.json());
 
   // When replying to after a function return, the role is not set, so we need to set it ourselves.
   // I suspect that this is an oversight by the api since it requires the role be set in
