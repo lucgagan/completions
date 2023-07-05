@@ -258,9 +258,20 @@ export const createCompletions = async (
         throw new Error(`Unexpected message: ${chunk}`);
       }
 
-      const responseChunk = ResponseChunkZodSchema.parse(
-        JSON.parse(chunk.toString().slice("data: ".length))
-      );
+      let responseChunk;
+
+      try {
+        responseChunk = ResponseChunkZodSchema.parse(
+          JSON.parse(chunk.slice("data: ".length))
+        );
+      } catch (error) {
+        console.log('could not parse chunk:\n"""\n', chunk, '\n"""\n');
+        console.error(error);
+
+        await reader.cancel();
+
+        throw error;
+      }
 
       options.onUpdate?.({
         cancel: () => {
