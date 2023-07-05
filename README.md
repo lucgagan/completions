@@ -16,6 +16,7 @@ This SDK makes it simple to:
 - [override the API endpoint](#overriding-api)
 - [per message option overrides](#per-message-option-overrides)
 - [utilize chat functions](#utilizing-functions)
+- [aborting unresponsive api requests](#aborting-unresponsive-api-requests)
 
 ## Usage
 
@@ -61,6 +62,8 @@ import { createChat } from "completions";
  *    We generally recommend altering this or temperature but not both.
  * @property user - A unique identifier representing your end-user, which can help OpenAI
  *    to monitor and detect abuse.
+ * @property unresponsiveApiTimeout - If set, this will cause the request to be aborted if
+ *    the API is unresponsive within the specified window of time (in milliseconds).
  */
 const chat = createChat({
   apiKey: process.env.OPENAI_API_KEY,
@@ -292,6 +295,23 @@ response.content;
 //   name: "Dex",
 //   domain: "dex.com",
 // }
+```
+
+## Aborting Unresponsive API Requests
+
+Sometimes you will encounter an unresponsive api call where the stream receives no data, but the request is still open, leaving the request in limbo until the default fetch timeout is reached (example is 300 seconds on chrome). To handle this you can optionally set an timeout for unresponsive requests.
+
+```ts
+const chat = createChat({
+  apiKey: OPENAI_API_KEY,
+  model: "gpt-3.5-turbo",
+  unresponsiveApiTimeout: 1,
+});
+try {
+  const response = await chat.sendMessage("Hello");
+} catch (error) {
+  // sendMessage will retry, but if it keeps failing an error will eventually be thrown
+}
 ```
 
 ## My other projects

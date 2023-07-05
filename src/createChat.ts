@@ -92,6 +92,8 @@ export type Chat = {
  *    We generally recommend altering this or temperature but not both.
  * @property user - A unique identifier representing your end-user, which can help OpenAI
  *    to monitor and detect abuse.
+ * @property unresponsiveApiTimeout - If set, this will cause the request to be aborted if
+ *    the API is unresponsive within the specified window of time (in milliseconds).
  */
 export const createChat = (
   options: Omit<CompletionsOptions, "messages" | "n" | "onUpdate">

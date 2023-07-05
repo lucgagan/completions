@@ -315,3 +315,21 @@ test("returns structured data", async () => {
 
   // force next version release
 });
+
+test("tests early abort", async () => {
+  const chat = createChat({
+    apiKey: OPENAI_API_KEY,
+    model: "gpt-3.5-turbo",
+    unresponsiveApiTimeout: 1,
+  });
+
+  let abortedEveryRequest = false;
+
+  try {
+    await chat.sendMessage("Hello", {});
+  } catch (e) {
+    abortedEveryRequest = true;
+  }
+
+  assert(abortedEveryRequest);
+});
