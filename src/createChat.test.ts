@@ -150,7 +150,7 @@ test("calls user defined function", async () => {
   );
 
   // @ts-expect-error TODO
-  assert.equal(response.functionCall.name, 'get_current_weather');
+  assert.equal(response.functionCall.name, "get_current_weather");
 
   // @ts-expect-error TODO
   assert.match(response.functionCall.arguments.location, /Albuquerque/);

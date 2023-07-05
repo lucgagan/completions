@@ -299,7 +299,7 @@ const parseResponse = (response: any) => {
     const parsedChoice: Choice = {
       role: choice.message.role,
       // I've seen content to be null in case of a function call
-      content: choice.message.content ?? '',
+      content: choice.message.content ?? "",
       finishReason: choice.finish_reason,
     };
 
