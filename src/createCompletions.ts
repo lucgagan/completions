@@ -265,11 +265,11 @@ export const createCompletions = async (
           JSON.parse(chunk.slice("data: ".length))
         );
       } catch (error) {
-        console.log('could not parse chunk:\n"""\n', chunk, '\n"""\n');
+        console.log('could not parse chunk:\n\n"""\n', chunk, '\n"""\n');
+        console.log('read value:\n\n"""\n', value, '\n"""\n');
         console.error(error);
 
         await reader.cancel();
-
         throw error;
       }
 
