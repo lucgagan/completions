@@ -50,7 +50,8 @@
     "format": "prettier --write ./src",
     "lint": "prettier --check ./src",
     "semantic-release": "semantic-release",
-    "test": "tsx --test src/createChat.test.ts"
+    "test": "tsx --test src/createChat.test.ts",
+    "postinstall": "npm run build"
   },
   "version": "0.0.0-development"
 }
