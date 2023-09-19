@@ -205,6 +205,12 @@ export const createChat = (
       choice = await complete(messageOptions);
 
       messages.push(omit(choice, "finishReason"));
+
+      // TODO record a trail of function calls
+      choice.functionCall = {
+        name: functionName,
+        arguments: functionArgs,
+      };
     }
 
     // TypeScript can't properly narrow the type in the function body.

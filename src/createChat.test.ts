@@ -146,8 +146,14 @@ test("calls user defined function", async () => {
   assert.equal(response.role, "assistant");
   assert.match(
     response.content,
-    /(the current weather in Albuquerque)|(weather in Albuquerque is currently)/i
+    /(the current weather in Albuquerque)|(weather in Albuquerque is currently|the current temperature in Albuquerque)/i
   );
+
+  // @ts-expect-error TODO
+  assert.equal(response.functionCall.name, "get_current_weather");
+
+  // @ts-expect-error TODO
+  assert.match(response.functionCall.arguments.location, /Albuquerque/);
 });
 
 test("calls user identified function", async () => {

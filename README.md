@@ -268,19 +268,19 @@ Suggest a random startup name
 Respond ONLY with a JSON object that satisfies the following schema:
 
 {
-  "type": "object",
-  "properties": {
-    "name": { "type": "string" },
-    "domain": { "type": "string" },
-  },
-  "required": ["name", "domain"],
+"type": "object",
+"properties": {
+"name": { "type": "string" },
+"domain": { "type": "string" },
+},
+"required": ["name", "domain"],
 }
 
 Examples:
 
 {
-  "name": "OpenAI",
-  "domain": "openai.com"
+"name": "OpenAI",
+"domain": "openai.com"
 }
 ```
 
