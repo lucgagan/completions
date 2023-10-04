@@ -350,6 +350,18 @@ export const createCompletions = async (
     throw new Error("Expected response to have a body");
   }
 
+  // {
+  //   error: {
+  //     message: "This model's maximum context length is 4097 tokens. However, your messages resulted in 4127 tokens (4091 in the messages, 36 in the functions). Please reduce the length of the messages or functions.",
+  //     type: 'invalid_request_error',
+  //     param: 'messages',
+  //     code: 'context_length_exceeded'
+  //   }
+  // }
+  if (response.status === 400) {
+    throw new UnrecoverableRemoteError(await response.json());
+  }
+
   const choices = options.onUpdate
     ? await consumeStream(response.body, options.onUpdate)
     : parseResponse(await response.json());
