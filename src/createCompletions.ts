@@ -295,6 +295,18 @@ const consumeStream = async (stream: ReadableStream, onUpdate: OnUpdate) => {
 };
 
 const parseResponse = (response: any) => {
+  // response {
+  //   error: {
+  //     message: 'The model `gpt-4-32k` does not exist or you do not have access to it. Learn more: https://help.openai.com/en/articles/7102672-how-can-i-access-gpt-4.',
+  //     type: 'invalid_request_error',
+  //     param: null,
+  //     code: 'model_not_found'
+  //   }
+  // }
+  if (response.error) {
+    throw new UnrecoverableRemoteError(response.error.message);
+  }
+
   return response.choices.map((choice: any) => {
     const parsedChoice: Choice = {
       role: choice.message.role,
