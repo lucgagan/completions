@@ -1,6 +1,6 @@
 import { z } from "zod";
 import Ajv, { AnySchemaObject } from "ajv";
-import { jsonrepair } from 'jsonrepair';
+import { jsonrepair } from "jsonrepair";
 
 export const FunctionZodSchema = z.object({
   name: z.string(),
