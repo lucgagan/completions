@@ -1,5 +1,6 @@
 import { z } from "zod";
 import Ajv, { AnySchemaObject } from "ajv";
+import { jsonrepair } from 'jsonrepair';
 
 export const FunctionZodSchema = z.object({
   name: z.string(),
@@ -26,7 +27,8 @@ export const createUserFunction = (options: UserFunctionOptions) => {
     parameters,
     function: options.function,
     parseArguments: (argsString: string) => {
-      const args = JSON.parse(argsString);
+      // https://github.com/langchain-ai/langchainjs/issues/2902
+      const args = JSON.parse(jsonrepair(argsString));
 
       const ajv = new Ajv();
 
